@@ -1,0 +1,66 @@
+kind: Topic
+apiVersion: 2024-12-01
+metadata:
+  name: SearchExistingClaim
+  displayName: Search for Claim
+  description: Look up a previously filed claim
+
+triggers:
+  - kind: MessageTrigger
+    phrases:
+      - "search for a claim"
+      - "search claim"
+      - "look up claim"
+      - "find my claim"
+      - "what's my claim number"
+
+nodes:
+  - id: askForSearchInfo
+    kind: Message
+    content: |
+      I'll help you search for your claim.
+      
+      Please provide either:
+      - Your **claim number** (e.g., CLM-2025-000001)
+      - Your **claimant name**
+      
+      What would you like to search for?
+
+  - id: launchAppForSearch
+    kind: ComputerUseTool
+    instruction: |
+      Launch the AutoClaimsFnolApp desktop application from:
+      d:\Git\auto-claims-fnol-demo\src\AutoClaimsFnolApp\bin\Release\net8.0-windows\AutoClaimsFnolApp.exe
+      
+      Wait for the app to fully load and display the login screen.
+
+  - id: loginForSearch
+    kind: ComputerUseTool
+    instruction: |
+      Log in with credentials:
+      - Username: adjuster1
+      - Password: pass123
+
+  - id: navigateToSearch
+    kind: ComputerUseTool
+    instruction: |
+      Click the "Search Existing Claim" button from the main menu.
+
+  - id: performSearch
+    kind: ComputerUseTool
+    instruction: |
+      On the Search screen:
+      1. Enter the search term (claim number or claimant name)
+      2. Click the Search button
+      3. Review the results
+      
+      Report the matching claims to the user with:
+      - Claim number
+      - Claimant name
+      - Date of incident
+      - Status
+
+  - id: reportResults
+    kind: Message
+    content: |
+      Here are the claims matching your search. Let me know if you need more details about any of them.

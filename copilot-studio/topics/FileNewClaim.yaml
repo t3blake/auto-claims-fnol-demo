@@ -1,0 +1,130 @@
+kind: Topic
+apiVersion: 2024-12-01
+metadata:
+  name: FileNewClaim
+  displayName: File a New Claim
+  description: Main workflow to file a new claim using Computer Use
+
+triggers:
+  - kind: MessageTrigger
+    phrases:
+      - "file a claim"
+      - "new claim"
+      - "create a claim"
+      - "start a claim"
+      - "I need to file a claim"
+
+nodes:
+  - id: greeting
+    kind: Message
+    content: |
+      I'll help you file a new insurance claim. I'll use Computer Use to navigate the claims system and process your accident image.
+      
+      Please provide:
+      1. An accident image (photo or sketch showing the collision)
+      2. Your information (name, phone, email, policy number)
+      
+      Ready to begin?
+
+  - id: waitForImage
+    kind: Message
+    content: |
+      Please upload or describe your accident image. I'll analyze it to extract:
+      - Incident type (single/multi-vehicle, parked, etc.)
+      - Impact type (T-bone, rear-end, head-on, etc.)
+      - Vehicle positions and directions
+      - Damage zones affected
+      - Scene factors (intersection, wet surface, etc.)
+
+  - id: launchApp
+    kind: ComputerUseTool
+    instruction: |
+      Launch the AutoClaimsFnolApp desktop application from:
+      d:\Git\auto-claims-fnol-demo\src\AutoClaimsFnolApp\bin\Release\net8.0-windows\AutoClaimsFnolApp.exe
+      
+      Wait for the app to fully load and display the login screen.
+
+  - id: performLogin
+    kind: ComputerUseTool
+    instruction: |
+      Log in with credentials:
+      - Username: adjuster1
+      - Password: pass123
+      
+      Click the Login button and wait for the main menu to appear.
+
+  - id: startNewClaim
+    kind: ComputerUseTool
+    instruction: |
+      Click the "New Claim" button on the main menu to begin the claim wizard.
+
+  - id: completeClaimFlow
+    kind: ComputerUseTool
+    instruction: |
+      Complete the 6-page claim form:
+      
+      PAGE 1 (Claimant):
+      - Fill claimant name, phone, email, policy number
+      - Click Next
+      
+      PAGE 2 (Incident):
+      - Set incident date, time, location
+      - Select incident type, weather, road conditions
+      - Indicate if police report filed
+      - Click Next
+      
+      PAGE 3 (Images):
+      - Add the user's accident image with description
+      - Ensure at least one image is uploaded
+      - Click Next
+      
+      PAGE 4 (Image Analysis):
+      - Analyze the image and extract:
+        * Incident type (Single/Multi-Vehicle)
+        * Vehicle count
+        * Impact type (T-Bone, Rear-End, Head-On, etc.)
+        * Vehicle positions and directions
+        * Damage zones (check all applicable)
+        * Scene factors (check all applicable)
+        * Confidence level
+        * Assumptions/notes
+      - Click Next
+      
+      PAGE 5 (Vehicles & Injuries):
+      - Fill primary vehicle details (make, model, year, damage level)
+      - Indicate injuries reported and witness presence
+      - Click Next
+      
+      PAGE 6 (Review):
+      - Review the complete claim
+      - Click Submit
+      
+      Wait for the confirmation screen showing the claim number.
+
+  - id: reportSuccess
+    kind: Message
+    content: |
+      ✅ Claim filed successfully!
+      
+      Extract and report the claim number to the user from the confirmation screen.
+      
+      Inform them:
+      - Their claim is submitted for adjuster review
+      - They will be contacted within 24 hours
+      - They should reference the claim number in all follow-up communications
+
+  - id: handleErrors
+    kind: Message
+    content: |
+      If validation errors occur:
+      1. Read the error message carefully
+      2. Go back to the relevant page
+      3. Correct the field based on the error
+      4. Retry
+      
+      Common issues:
+      - Missing claimant name or phone → Page 1
+      - Future incident date → Page 2
+      - Missing images → Page 3
+      - Incomplete image analysis (missing damage zones or scene factors) → Page 4
+      - Missing vehicle info → Page 5
