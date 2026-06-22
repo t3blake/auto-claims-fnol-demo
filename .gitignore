@@ -1,0 +1,45 @@
+# Build and dependency artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# IDE and editor
+.vs/
+.vscode/
+*.sln.iml
+*.user
+*.suo
+
+# Database (local development — do not commit)
+claims-fnol.db
+claims-fnol.db-*
+
+# Intune packaging artifacts
+intune/output/
+intune/source/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Local environment
+.env
+.env.local
+appsettings.local.json
+
+# Demo artifacts (large images, screenshots)
+*.tmp.jpg
+*.tmp.png
+_scratch/
+
+# Node modules (if any frontend tools)
+node_modules/
+package-lock.json
+
+# Python cache (if any scripts)
+__pycache__/
+*.pyc
