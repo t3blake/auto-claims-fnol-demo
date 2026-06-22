@@ -10,6 +10,73 @@ using System.Windows.Media.Imaging;
 namespace AutoClaimsFnolApp;
 
 /// <summary>
+/// Simple file-based logging utility for troubleshooting
+/// </summary>
+internal static class Logger
+{
+    private static readonly string LogPath = Path.Combine(
+        AppContext.BaseDirectory,
+        $"app-{DateTime.Now:yyyy-MM-dd}.log");
+
+    internal static void Info(string message)
+    {
+        Log("INFO", message);
+    }
+
+    internal static void Error(string message, Exception? ex = null)
+    {
+        var msg = ex is null ? message : $"{message}\n  Exception: {ex.GetType().Name}: {ex.Message}";
+        Log("ERROR", msg);
+    }
+
+    internal static void Warn(string message)
+    {
+        Log("WARN", message);
+    }
+
+    private static void Log(string level, string message)
+    {
+        try
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var logLine = $"[{timestamp}] [{level}] {message}";
+            File.AppendAllText(LogPath, logLine + Environment.NewLine);
+        }
+        catch
+        {
+            // Silently fail if logging fails to avoid disrupting app
+        }
+    }
+
+    internal static string GetRecentLogs(int lineCount = 50)
+    {
+        try
+        {
+            if (!File.Exists(LogPath))
+                return "(No logs yet)";
+
+            var lines = File.ReadAllLines(LogPath);
+            var recent = lines.TakeLast(lineCount).ToList();
+            return string.Join(Environment.NewLine, recent);
+        }
+        catch (Exception ex)
+        {
+            return $"Error reading logs: {ex.Message}";
+        }
+    }
+
+    internal static void ClearLogs()
+    {
+        try
+        {
+            if (File.Exists(LogPath))
+                File.Delete(LogPath);
+        }
+        catch { }
+    }
+}
+
+/// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow : Window
@@ -39,6 +106,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _dbPath = Path.Combine(AppContext.BaseDirectory, "claims-fnol.db");
+        Logger.Info($"App started. DB path: {_dbPath}");
         InitializeDatabase();
         ResetWizard();
         ShowLogin();
@@ -46,8 +114,11 @@ public partial class MainWindow : Window
 
     private void InitializeDatabase()
     {
-        using var connection = new SqliteConnection($"Data Source={_dbPath}");
-        connection.Open();
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={_dbPath}");
+            connection.Open();
+            Logger.Info("Database connection established.");
 
         var command = connection.CreateCommand();
         command.CommandText = @"
@@ -120,11 +191,18 @@ CREATE TABLE IF NOT EXISTS Claims (
             try
             {
                 alterCmd.ExecuteNonQuery();
+                Logger.Info("Database schema migrated: Added ImageDescriptions column.");
             }
-            catch
+            catch (Exception ex)
             {
-                // Column might already exist or other issue, continue gracefully
+                Logger.Warn($"Schema migration failed (column may already exist): {ex.Message}");
             }
+        }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("Database initialization failed", ex);
+            MessageBox.Show($"Database error: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -539,11 +617,13 @@ VALUES (
             command.Parameters.AddWithValue("$WitnessName", WitnessNameTextBox.Text.Trim());
             command.Parameters.AddWithValue("$CreatedAt", DateTime.UtcNow.ToString("o"));
             command.ExecuteNonQuery();
+            Logger.Info($"Claim saved successfully: {claimNumber} by {_currentUser}");
 
             ConfirmationText.Text = $"Claim Number: {claimNumber}\nClaimant: {ClaimantNameTextBox.Text.Trim()}\nStatus: Submitted for Review\n\nNext steps:\n- An adjuster will contact the claimant within 24 hours.\n- Reference this claim number in all follow-up.";
         }
         catch (Exception ex)
         {
+            Logger.Error($"Claim save failed for user {_currentUser}", ex);
             MessageBox.Show($"Error saving claim:\n\n{ex.Message}\n\n{ex.InnerException?.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
             WizardValidationText.Text = $"Failed to save claim: {ex.Message}";
         }
@@ -805,6 +885,7 @@ LIMIT 100;";
         }
 
         _currentImages.Add(new ClaimImage { FilePath = dialog.FileName, Description = description });
+        Logger.Info($"Image added: {description} ({Path.GetFileName(dialog.FileName)})");
         RefreshImagesList();
         ImageDescriptionTextBox.Text = string.Empty;
     }
@@ -889,6 +970,12 @@ LIMIT 100;";
     private void RefreshStatsButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshAdminStats();
+    }
+
+    private void ViewLogsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var logs = Logger.GetRecentLogs(100);
+        AdminStatsTextBox.Text = logs;
     }
 
     private void BackToMenuFromAdminButton_Click(object sender, RoutedEventArgs e)
