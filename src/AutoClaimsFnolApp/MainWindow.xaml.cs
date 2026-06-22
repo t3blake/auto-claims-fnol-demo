@@ -19,12 +19,20 @@ public partial class MainWindow : Window
     private const string AdminUser = "admin";
     private const string AdminPassword = "admin";
 
+    private class ClaimImage
+    {
+        public string FilePath { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+
+        public override string ToString() => $"{Description} ({Path.GetFileName(FilePath)})";
+    }
+
     private readonly string _dbPath;
     private string _currentUser = string.Empty;
     private string _currentRole = string.Empty;
     private int _loginAttempts;
     private int _currentStep = 1;
-    private string? _uploadedImagePath;
+    private readonly List<ClaimImage> _currentImages = new();
 
     public MainWindow()
     {
@@ -59,6 +67,7 @@ CREATE TABLE IF NOT EXISTS Claims (
     PoliceReportFiled TEXT NOT NULL,
     PoliceReportNumber TEXT,
     ImageFileName TEXT,
+    ImageDescriptions TEXT,
     ImageIncidentType TEXT NOT NULL,
     ImageVehicleCount INTEGER NOT NULL,
     ImpactType TEXT NOT NULL,
@@ -153,7 +162,7 @@ CREATE TABLE IF NOT EXISTS Claims (
     private void ResetWizard()
     {
         _currentStep = 1;
-        _uploadedImagePath = null;
+        _currentImages.Clear();
 
         ClaimantNameTextBox.Text = string.Empty;
         ClaimantPhoneTextBox.Text = string.Empty;
@@ -171,8 +180,8 @@ CREATE TABLE IF NOT EXISTS Claims (
         PoliceReportTextBox.Text = string.Empty;
 
         UploadedImagePreview.Source = null;
-        ImageStatusText.Text = "Status: No image selected";
-        ImageFileNameText.Text = "Filename: (none)";
+        ImageDescriptionTextBox.Text = string.Empty;
+        RefreshImagesList();
 
         ImageIncidentTypeComboBox.SelectedIndex = -1;
         ImageVehicleCountTextBox.Text = string.Empty;
@@ -289,11 +298,20 @@ CREATE TABLE IF NOT EXISTS Claims (
             }
         }
 
+        if (_currentStep == 3)
+        {
+            if (_currentImages.Count == 0)
+            {
+                message = "At least one image is required before proceeding to analysis.";
+                return false;
+            }
+        }
+
         if (_currentStep == 4)
         {
-            if (_uploadedImagePath is null)
+            if (_currentImages.Count == 0)
             {
-                message = "Image analysis requires an uploaded image. Go back to Page 3 and upload a file.";
+                message = "Image analysis requires uploaded images. Go back to Page 3 and upload file(s).";
                 return false;
             }
 
@@ -386,7 +404,10 @@ CREATE TABLE IF NOT EXISTS Claims (
         sb.AppendLine($"Police Report Filed: {(PoliceYesRadio.IsChecked == true ? "Yes" : "No")}");
         sb.AppendLine($"Police Report Number: {PoliceReportTextBox.Text}");
         sb.AppendLine();
-        sb.AppendLine($"Image: {Path.GetFileName(_uploadedImagePath ?? string.Empty)}");
+        var imageStr = _currentImages.Count > 0
+            ? string.Join(", ", _currentImages.Select(i => $"{i.Description} ({Path.GetFileName(i.FilePath)})"))
+            : "(No images)";
+        sb.AppendLine($"Images: {imageStr}");
         sb.AppendLine($"Image Incident Type: {ComboValue(ImageIncidentTypeComboBox)}");
         sb.AppendLine($"Vehicle Count: {ImageVehicleCountTextBox.Text}");
         sb.AppendLine($"Impact Type: {ComboValue(ImpactTypeComboBox)}");
@@ -418,6 +439,10 @@ CREATE TABLE IF NOT EXISTS Claims (
         var damageZones = BuildCommaList(("Front", DamageFrontCheckBox.IsChecked == true), ("Rear", DamageRearCheckBox.IsChecked == true), ("Driver Side", DamageDriverCheckBox.IsChecked == true), ("Passenger Side", DamagePassengerCheckBox.IsChecked == true), ("Roof", DamageRoofCheckBox.IsChecked == true), ("Undercarriage", DamageUnderCheckBox.IsChecked == true));
         var roadFactors = BuildCommaList(("Intersection", FactorIntersectionCheckBox.IsChecked == true), ("Lane Merge", FactorLaneMergeCheckBox.IsChecked == true), ("Parked Vehicle", FactorParkedCheckBox.IsChecked == true), ("Median/Divider", FactorMedianCheckBox.IsChecked == true), ("Gravel/Dirt", FactorGravelCheckBox.IsChecked == true), ("Wet Surface", FactorWetCheckBox.IsChecked == true));
 
+        var imageDescriptions = _currentImages.Count > 0
+            ? string.Join("|", _currentImages.Select(i => $"{i.Description}:{Path.GetFileName(i.FilePath)}"))
+            : string.Empty;
+
         using var connection = new SqliteConnection($"Data Source={_dbPath}");
         connection.Open();
         using var command = connection.CreateCommand();
@@ -425,7 +450,7 @@ CREATE TABLE IF NOT EXISTS Claims (
 INSERT INTO Claims (
     ClaimNumber, ClaimantName, ClaimantPhone, ClaimantEmail, PolicyNumber,
     IncidentDate, IncidentTime, IncidentLocation, IncidentType, Weather, Road,
-    PoliceReportFiled, PoliceReportNumber, ImageFileName, ImageIncidentType, ImageVehicleCount,
+    PoliceReportFiled, PoliceReportNumber, ImageFileName, ImageDescriptions, ImageIncidentType, ImageVehicleCount,
     ImpactType, Vehicle1Position, Vehicle1Direction, Vehicle2Position, Vehicle2Direction,
     DamageZones, RoadFactors, Confidence, Assumptions,
     PrimaryMake, PrimaryModel, PrimaryYear, PrimaryDamage,
@@ -434,7 +459,7 @@ INSERT INTO Claims (
 VALUES (
     $ClaimNumber, $ClaimantName, $ClaimantPhone, $ClaimantEmail, $PolicyNumber,
     $IncidentDate, $IncidentTime, $IncidentLocation, $IncidentType, $Weather, $Road,
-    $PoliceReportFiled, $PoliceReportNumber, $ImageFileName, $ImageIncidentType, $ImageVehicleCount,
+    $PoliceReportFiled, $PoliceReportNumber, $ImageFileName, $ImageDescriptions, $ImageIncidentType, $ImageVehicleCount,
     $ImpactType, $Vehicle1Position, $Vehicle1Direction, $Vehicle2Position, $Vehicle2Direction,
     $DamageZones, $RoadFactors, $Confidence, $Assumptions,
     $PrimaryMake, $PrimaryModel, $PrimaryYear, $PrimaryDamage,
@@ -455,7 +480,8 @@ VALUES (
         command.Parameters.AddWithValue("$Road", ComboValue(RoadComboBox));
         command.Parameters.AddWithValue("$PoliceReportFiled", PoliceYesRadio.IsChecked == true ? "Yes" : "No");
         command.Parameters.AddWithValue("$PoliceReportNumber", PoliceReportTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$ImageFileName", Path.GetFileName(_uploadedImagePath ?? string.Empty));
+        command.Parameters.AddWithValue("$ImageFileName", _currentImages.Count > 0 ? Path.GetFileName(_currentImages[0].FilePath) : string.Empty);
+        command.Parameters.AddWithValue("$ImageDescriptions", imageDescriptions);
         command.Parameters.AddWithValue("$ImageIncidentType", ComboValue(ImageIncidentTypeComboBox));
         command.Parameters.AddWithValue("$ImageVehicleCount", int.Parse(ImageVehicleCountTextBox.Text));
         command.Parameters.AddWithValue("$ImpactType", ComboValue(ImpactTypeComboBox));
@@ -486,12 +512,12 @@ VALUES (
 
     private void AutoPopulateImageAnalysisDefaults()
     {
-        if (_uploadedImagePath is null)
+        if (_currentImages.Count == 0)
         {
             return;
         }
 
-        var fileName = Path.GetFileName(_uploadedImagePath).ToLowerInvariant();
+        var fileName = Path.GetFileName(_currentImages[0].FilePath).ToLowerInvariant();
         var multi = fileName.Contains("2") || fileName.Contains("3") || fileName.Contains("multi") || fileName.Contains("tbone");
         var ambiguous = fileName.Contains("ambig") || fileName.Contains("unclear") || fileName.Contains("blur");
 
@@ -719,11 +745,18 @@ LIMIT 100;";
         ShowMainMenu();
     }
 
-    private void BrowseImageButton_Click(object sender, RoutedEventArgs e)
+    private void AddImageButton_Click(object sender, RoutedEventArgs e)
     {
+        var description = ImageDescriptionTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            MessageBox.Show("Please enter a description for the image (e.g., 'Front-end damage', 'Traffic flow diagram').", "Missing Description", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var dialog = new OpenFileDialog
         {
-            Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp",
+            Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp;*.gif)|*.jpg;*.jpeg;*.png;*.bmp;*.gif",
             Title = "Select Accident Image"
         };
 
@@ -732,24 +765,58 @@ LIMIT 100;";
             return;
         }
 
-        _uploadedImagePath = dialog.FileName;
-        ImageStatusText.Text = "Status: Image attached";
-        ImageFileNameText.Text = $"Filename: {Path.GetFileName(_uploadedImagePath)}";
-
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.UriSource = new Uri(_uploadedImagePath);
-        bitmap.EndInit();
-        UploadedImagePreview.Source = bitmap;
+        _currentImages.Add(new ClaimImage { FilePath = dialog.FileName, Description = description });
+        RefreshImagesList();
+        ImageDescriptionTextBox.Text = string.Empty;
     }
 
-    private void ClearImageButton_Click(object sender, RoutedEventArgs e)
+    private void RemoveImageButton_Click(object sender, RoutedEventArgs e)
     {
-        _uploadedImagePath = null;
-        UploadedImagePreview.Source = null;
-        ImageStatusText.Text = "Status: No image selected";
-        ImageFileNameText.Text = "Filename: (none)";
+        if (ImagesListBox.SelectedIndex < 0)
+        {
+            MessageBox.Show("Please select an image to remove.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        _currentImages.RemoveAt(ImagesListBox.SelectedIndex);
+        RefreshImagesList();
+    }
+
+    private void ImagesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ImagesListBox.SelectedIndex < 0 || ImagesListBox.SelectedIndex >= _currentImages.Count)
+        {
+            UploadedImagePreview.Source = null;
+            return;
+        }
+
+        var image = _currentImages[ImagesListBox.SelectedIndex];
+        try
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(image.FilePath);
+            bitmap.EndInit();
+            UploadedImagePreview.Source = bitmap;
+        }
+        catch
+        {
+            MessageBox.Show($"Could not load image: {image.FilePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void RefreshImagesList()
+    {
+        ImagesListBox.Items.Clear();
+        foreach (var img in _currentImages)
+        {
+            ImagesListBox.Items.Add(img);
+        }
+
+        ImageStatusText.Text = _currentImages.Count == 0
+            ? "Status: No images uploaded"
+            : $"Status: {_currentImages.Count} image(s) attached";
     }
 
     private void SearchButton_Click(object sender, RoutedEventArgs e)
