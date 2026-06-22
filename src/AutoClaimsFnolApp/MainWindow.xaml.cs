@@ -95,6 +95,37 @@ CREATE TABLE IF NOT EXISTS Claims (
 );
 ";
         command.ExecuteNonQuery();
+
+        // Migration: Add ImageDescriptions column if it doesn't exist
+        var checkCmd = connection.CreateCommand();
+        checkCmd.CommandText = "PRAGMA table_info(Claims);";
+        var hasImageDescriptions = false;
+        using (var reader = checkCmd.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                var columnName = reader.GetString(1);
+                if (columnName == "ImageDescriptions")
+                {
+                    hasImageDescriptions = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasImageDescriptions)
+        {
+            var alterCmd = connection.CreateCommand();
+            alterCmd.CommandText = "ALTER TABLE Claims ADD COLUMN ImageDescriptions TEXT;";
+            try
+            {
+                alterCmd.ExecuteNonQuery();
+            }
+            catch
+            {
+                // Column might already exist or other issue, continue gracefully
+            }
+        }
     }
 
     private void ShowOnlyPanel(UIElement panel)
@@ -435,18 +466,20 @@ CREATE TABLE IF NOT EXISTS Claims (
 
     private void SaveClaim()
     {
-        var claimNumber = GenerateClaimNumber();
-        var damageZones = BuildCommaList(("Front", DamageFrontCheckBox.IsChecked == true), ("Rear", DamageRearCheckBox.IsChecked == true), ("Driver Side", DamageDriverCheckBox.IsChecked == true), ("Passenger Side", DamagePassengerCheckBox.IsChecked == true), ("Roof", DamageRoofCheckBox.IsChecked == true), ("Undercarriage", DamageUnderCheckBox.IsChecked == true));
-        var roadFactors = BuildCommaList(("Intersection", FactorIntersectionCheckBox.IsChecked == true), ("Lane Merge", FactorLaneMergeCheckBox.IsChecked == true), ("Parked Vehicle", FactorParkedCheckBox.IsChecked == true), ("Median/Divider", FactorMedianCheckBox.IsChecked == true), ("Gravel/Dirt", FactorGravelCheckBox.IsChecked == true), ("Wet Surface", FactorWetCheckBox.IsChecked == true));
+        try
+        {
+            var claimNumber = GenerateClaimNumber();
+            var damageZones = BuildCommaList(("Front", DamageFrontCheckBox.IsChecked == true), ("Rear", DamageRearCheckBox.IsChecked == true), ("Driver Side", DamageDriverCheckBox.IsChecked == true), ("Passenger Side", DamagePassengerCheckBox.IsChecked == true), ("Roof", DamageRoofCheckBox.IsChecked == true), ("Undercarriage", DamageUnderCheckBox.IsChecked == true));
+            var roadFactors = BuildCommaList(("Intersection", FactorIntersectionCheckBox.IsChecked == true), ("Lane Merge", FactorLaneMergeCheckBox.IsChecked == true), ("Parked Vehicle", FactorParkedCheckBox.IsChecked == true), ("Median/Divider", FactorMedianCheckBox.IsChecked == true), ("Gravel/Dirt", FactorGravelCheckBox.IsChecked == true), ("Wet Surface", FactorWetCheckBox.IsChecked == true));
 
-        var imageDescriptions = _currentImages.Count > 0
-            ? string.Join("|", _currentImages.Select(i => $"{i.Description}:{Path.GetFileName(i.FilePath)}"))
-            : string.Empty;
+            var imageDescriptions = _currentImages.Count > 0
+                ? string.Join("|", _currentImages.Select(i => $"{i.Description}:{Path.GetFileName(i.FilePath)}"))
+                : string.Empty;
 
-        using var connection = new SqliteConnection($"Data Source={_dbPath}");
-        connection.Open();
-        using var command = connection.CreateCommand();
-        command.CommandText = @"
+            using var connection = new SqliteConnection($"Data Source={_dbPath}");
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
 INSERT INTO Claims (
     ClaimNumber, ClaimantName, ClaimantPhone, ClaimantEmail, PolicyNumber,
     IncidentDate, IncidentTime, IncidentLocation, IncidentType, Weather, Road,
@@ -467,47 +500,53 @@ VALUES (
     $InjuriesReported, $WitnessPresent, $WitnessName, 'Submitted for Review', $CreatedAt);
 ";
 
-        command.Parameters.AddWithValue("$ClaimNumber", claimNumber);
-        command.Parameters.AddWithValue("$ClaimantName", ClaimantNameTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$ClaimantPhone", ClaimantPhoneTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$ClaimantEmail", ClaimantEmailTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$PolicyNumber", PolicyNumberTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$IncidentDate", IncidentDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty);
-        command.Parameters.AddWithValue("$IncidentTime", IncidentTimeTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$IncidentLocation", IncidentLocationTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$IncidentType", ComboValue(IncidentTypeComboBox));
-        command.Parameters.AddWithValue("$Weather", ComboValue(WeatherComboBox));
-        command.Parameters.AddWithValue("$Road", ComboValue(RoadComboBox));
-        command.Parameters.AddWithValue("$PoliceReportFiled", PoliceYesRadio.IsChecked == true ? "Yes" : "No");
-        command.Parameters.AddWithValue("$PoliceReportNumber", PoliceReportTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$ImageFileName", _currentImages.Count > 0 ? Path.GetFileName(_currentImages[0].FilePath) : string.Empty);
-        command.Parameters.AddWithValue("$ImageDescriptions", imageDescriptions);
-        command.Parameters.AddWithValue("$ImageIncidentType", ComboValue(ImageIncidentTypeComboBox));
-        command.Parameters.AddWithValue("$ImageVehicleCount", int.Parse(ImageVehicleCountTextBox.Text));
-        command.Parameters.AddWithValue("$ImpactType", ComboValue(ImpactTypeComboBox));
-        command.Parameters.AddWithValue("$Vehicle1Position", ComboValue(Vehicle1PositionComboBox));
-        command.Parameters.AddWithValue("$Vehicle1Direction", ComboValue(Vehicle1DirectionComboBox));
-        command.Parameters.AddWithValue("$Vehicle2Position", ComboValue(Vehicle2PositionComboBox));
-        command.Parameters.AddWithValue("$Vehicle2Direction", ComboValue(Vehicle2DirectionComboBox));
-        command.Parameters.AddWithValue("$DamageZones", damageZones);
-        command.Parameters.AddWithValue("$RoadFactors", roadFactors);
-        command.Parameters.AddWithValue("$Confidence", ComboValue(ConfidenceComboBox));
-        command.Parameters.AddWithValue("$Assumptions", AssumptionsTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$PrimaryMake", PrimaryMakeTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$PrimaryModel", PrimaryModelTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$PrimaryYear", PrimaryYearTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$PrimaryDamage", ComboValue(PrimaryDamageComboBox));
-        command.Parameters.AddWithValue("$MultiVehicle", MultiVehicleCheckBox.IsChecked == true ? "Yes" : "No");
-        command.Parameters.AddWithValue("$OtherMake", OtherMakeTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$OtherModel", OtherModelTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$OtherDamage", ComboValue(OtherDamageComboBox));
-        command.Parameters.AddWithValue("$InjuriesReported", InjuriesYesRadio.IsChecked == true ? "Yes" : "No");
-        command.Parameters.AddWithValue("$WitnessPresent", WitnessYesRadio.IsChecked == true ? "Yes" : "No");
-        command.Parameters.AddWithValue("$WitnessName", WitnessNameTextBox.Text.Trim());
-        command.Parameters.AddWithValue("$CreatedAt", DateTime.UtcNow.ToString("o"));
-        command.ExecuteNonQuery();
+            command.Parameters.AddWithValue("$ClaimNumber", claimNumber);
+            command.Parameters.AddWithValue("$ClaimantName", ClaimantNameTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$ClaimantPhone", ClaimantPhoneTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$ClaimantEmail", ClaimantEmailTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$PolicyNumber", PolicyNumberTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$IncidentDate", IncidentDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty);
+            command.Parameters.AddWithValue("$IncidentTime", IncidentTimeTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$IncidentLocation", IncidentLocationTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$IncidentType", ComboValue(IncidentTypeComboBox));
+            command.Parameters.AddWithValue("$Weather", ComboValue(WeatherComboBox));
+            command.Parameters.AddWithValue("$Road", ComboValue(RoadComboBox));
+            command.Parameters.AddWithValue("$PoliceReportFiled", PoliceYesRadio.IsChecked == true ? "Yes" : "No");
+            command.Parameters.AddWithValue("$PoliceReportNumber", PoliceReportTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$ImageFileName", _currentImages.Count > 0 ? Path.GetFileName(_currentImages[0].FilePath) : string.Empty);
+            command.Parameters.AddWithValue("$ImageDescriptions", imageDescriptions);
+            command.Parameters.AddWithValue("$ImageIncidentType", ComboValue(ImageIncidentTypeComboBox));
+            command.Parameters.AddWithValue("$ImageVehicleCount", int.Parse(ImageVehicleCountTextBox.Text));
+            command.Parameters.AddWithValue("$ImpactType", ComboValue(ImpactTypeComboBox));
+            command.Parameters.AddWithValue("$Vehicle1Position", ComboValue(Vehicle1PositionComboBox));
+            command.Parameters.AddWithValue("$Vehicle1Direction", ComboValue(Vehicle1DirectionComboBox));
+            command.Parameters.AddWithValue("$Vehicle2Position", ComboValue(Vehicle2PositionComboBox));
+            command.Parameters.AddWithValue("$Vehicle2Direction", ComboValue(Vehicle2DirectionComboBox));
+            command.Parameters.AddWithValue("$DamageZones", damageZones);
+            command.Parameters.AddWithValue("$RoadFactors", roadFactors);
+            command.Parameters.AddWithValue("$Confidence", ComboValue(ConfidenceComboBox));
+            command.Parameters.AddWithValue("$Assumptions", AssumptionsTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$PrimaryMake", PrimaryMakeTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$PrimaryModel", PrimaryModelTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$PrimaryYear", PrimaryYearTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$PrimaryDamage", ComboValue(PrimaryDamageComboBox));
+            command.Parameters.AddWithValue("$MultiVehicle", MultiVehicleCheckBox.IsChecked == true ? "Yes" : "No");
+            command.Parameters.AddWithValue("$OtherMake", OtherMakeTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$OtherModel", OtherModelTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$OtherDamage", ComboValue(OtherDamageComboBox));
+            command.Parameters.AddWithValue("$InjuriesReported", InjuriesYesRadio.IsChecked == true ? "Yes" : "No");
+            command.Parameters.AddWithValue("$WitnessPresent", WitnessYesRadio.IsChecked == true ? "Yes" : "No");
+            command.Parameters.AddWithValue("$WitnessName", WitnessNameTextBox.Text.Trim());
+            command.Parameters.AddWithValue("$CreatedAt", DateTime.UtcNow.ToString("o"));
+            command.ExecuteNonQuery();
 
-        ConfirmationText.Text = $"Claim Number: {claimNumber}\nClaimant: {ClaimantNameTextBox.Text.Trim()}\nStatus: Submitted for Review\n\nNext steps:\n- An adjuster will contact the claimant within 24 hours.\n- Reference this claim number in all follow-up.";
+            ConfirmationText.Text = $"Claim Number: {claimNumber}\nClaimant: {ClaimantNameTextBox.Text.Trim()}\nStatus: Submitted for Review\n\nNext steps:\n- An adjuster will contact the claimant within 24 hours.\n- Reference this claim number in all follow-up.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error saving claim:\n\n{ex.Message}\n\n{ex.InnerException?.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            WizardValidationText.Text = $"Failed to save claim: {ex.Message}";
+        }
     }
 
     private void AutoPopulateImageAnalysisDefaults()
