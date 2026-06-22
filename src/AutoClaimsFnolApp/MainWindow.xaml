@@ -1,0 +1,379 @@
+﻿<Window x:Class="AutoClaimsFnolApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AutoClaimsFnolApp"
+        mc:Ignorable="d"
+        Title="Auto Claims FNOL - Intake System"
+        Height="768"
+        Width="1024"
+        MinHeight="600"
+        MinWidth="800"
+        Background="#E8E8E8"
+        FontFamily="Segoe UI"
+        FontSize="12">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Background="#D0D0D0" BorderBrush="#7A7A7A" BorderThickness="1" Padding="8" Margin="0,0,0,12">
+            <TextBlock Text="AUTO CLAIMS FNOL - LEGACY INTAKE WORKSTATION" FontWeight="Bold" FontSize="16" />
+        </Border>
+
+        <Grid>
+            <Grid x:Name="LoginPanel" Visibility="Visible">
+                <Border Width="420" Padding="20" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="LOGIN REQUIRED" FontWeight="Bold" FontSize="16" Margin="0,0,0,16" />
+
+                        <TextBlock Text="Username" />
+                        <TextBox x:Name="UsernameTextBox" Margin="0,4,0,10" />
+
+                        <TextBlock Text="Password" />
+                        <PasswordBox x:Name="PasswordTextBox" Margin="0,4,0,16" />
+
+                        <TextBlock x:Name="LoginStatusText" Foreground="Red" Margin="0,0,0,10" TextWrapping="Wrap" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Login" Width="100" Margin="0,0,8,0" Click="LoginButton_Click" />
+                            <Button Content="Exit" Width="100" Click="ExitButton_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="MainMenuPanel" Visibility="Collapsed">
+                <Border Width="520" Padding="20" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="MAIN MENU" FontWeight="Bold" FontSize="16" Margin="0,0,0,6" />
+                        <TextBlock x:Name="LoggedInAsText" Margin="0,0,0,16" />
+
+                        <Button Content="New Claim" Height="36" Margin="0,0,0,10" Click="NewClaimButton_Click" />
+                        <Button Content="Search Existing Claim" Height="36" Margin="0,0,0,10" Click="SearchClaimsButton_Click" />
+                        <Button x:Name="AdminButton" Content="System Administration" Height="36" Margin="0,0,0,10" Click="AdminButton_Click" />
+                        <Button Content="Log Off" Height="36" Click="LogOffButton_Click" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="NewClaimPanel" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" Padding="10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock x:Name="WizardTitleText" FontWeight="Bold" FontSize="15" />
+                        <TextBlock x:Name="WizardValidationText" Foreground="Red" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="1" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" Padding="10">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <StackPanel x:Name="Step1Panel" Visibility="Visible">
+                                <TextBlock Text="Claimant Full Name (required)" />
+                                <TextBox x:Name="ClaimantNameTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Phone Number (required)" />
+                                <TextBox x:Name="ClaimantPhoneTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Email Address (optional)" />
+                                <TextBox x:Name="ClaimantEmailTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Policy Number (optional)" />
+                                <TextBox x:Name="PolicyNumberTextBox" Margin="0,4,0,10" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="Step2Panel" Visibility="Collapsed">
+                                <TextBlock Text="Incident Date (required)" />
+                                <DatePicker x:Name="IncidentDatePicker" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Incident Time (optional, HH:MM)" />
+                                <TextBox x:Name="IncidentTimeTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Incident Location (required)" />
+                                <TextBox x:Name="IncidentLocationTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Incident Type (required)" />
+                                <ComboBox x:Name="IncidentTypeComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="Single Vehicle" />
+                                    <ComboBoxItem Content="Multi-Vehicle" />
+                                    <ComboBoxItem Content="Parked Vehicle" />
+                                    <ComboBoxItem Content="Other" />
+                                </ComboBox>
+
+                                <TextBlock Text="Weather Conditions (required)" />
+                                <ComboBox x:Name="WeatherComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="Clear" />
+                                    <ComboBoxItem Content="Rain" />
+                                    <ComboBoxItem Content="Snow" />
+                                    <ComboBoxItem Content="Fog" />
+                                    <ComboBoxItem Content="Dark" />
+                                    <ComboBoxItem Content="Overcast" />
+                                    <ComboBoxItem Content="Other" />
+                                </ComboBox>
+
+                                <TextBlock Text="Road Conditions (required)" />
+                                <ComboBox x:Name="RoadComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="Dry" />
+                                    <ComboBoxItem Content="Wet" />
+                                    <ComboBoxItem Content="Ice/Snow" />
+                                    <ComboBoxItem Content="Gravel" />
+                                    <ComboBoxItem Content="Pothole/Debris" />
+                                    <ComboBoxItem Content="Other" />
+                                </ComboBox>
+
+                                <TextBlock Text="Police Report Filed (required)" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
+                                    <RadioButton x:Name="PoliceYesRadio" Content="Yes" Margin="0,0,20,0" />
+                                    <RadioButton x:Name="PoliceNoRadio" Content="No" />
+                                </StackPanel>
+
+                                <TextBlock Text="Police Report Number (optional)" />
+                                <TextBox x:Name="PoliceReportTextBox" Margin="0,4,0,10" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="Step3Panel" Visibility="Collapsed">
+                                <TextBlock Text="Upload Accident Image" FontWeight="Bold" />
+                                <TextBlock Text="Accepted formats: .jpg, .png, .bmp" Margin="0,4,0,10" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Button Content="Browse..." Width="120" Margin="0,0,8,0" Click="BrowseImageButton_Click" />
+                                    <Button Content="Clear Image" Width="120" Click="ClearImageButton_Click" />
+                                </StackPanel>
+
+                                <TextBlock x:Name="ImageStatusText" Margin="0,0,0,10" Text="Status: No image selected" />
+                                <TextBlock x:Name="ImageFileNameText" Margin="0,0,0,10" Text="Filename: (none)" />
+
+                                <Border Width="460" Height="300" BorderBrush="#7A7A7A" BorderThickness="1" Background="White">
+                                    <Image x:Name="UploadedImagePreview" Stretch="Uniform" />
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel x:Name="Step4Panel" Visibility="Collapsed">
+                                <TextBlock Text="Image Analysis &amp; Interpretation (required)" FontWeight="Bold" Margin="0,0,0,10" />
+
+                                <TextBlock Text="Incident Type (from image)" />
+                                <ComboBox x:Name="ImageIncidentTypeComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="Single Vehicle" />
+                                    <ComboBoxItem Content="Multi-Vehicle" />
+                                    <ComboBoxItem Content="Parked Vehicle" />
+                                    <ComboBoxItem Content="Unknown" />
+                                </ComboBox>
+
+                                <TextBlock Text="Number of Vehicles/Objects" />
+                                <TextBox x:Name="ImageVehicleCountTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Estimated Impact Type" />
+                                <ComboBox x:Name="ImpactTypeComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="Head-On" />
+                                    <ComboBoxItem Content="T-Bone" />
+                                    <ComboBoxItem Content="Rear-End" />
+                                    <ComboBoxItem Content="Side-Swipe" />
+                                    <ComboBoxItem Content="Unknown" />
+                                </ComboBox>
+
+                                <TextBlock Text="Vehicle 1 Position" />
+                                <ComboBox x:Name="Vehicle1PositionComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="North" />
+                                    <ComboBoxItem Content="South" />
+                                    <ComboBoxItem Content="East" />
+                                    <ComboBoxItem Content="West" />
+                                    <ComboBoxItem Content="Center" />
+                                </ComboBox>
+
+                                <TextBlock Text="Vehicle 1 Direction of Travel" />
+                                <ComboBox x:Name="Vehicle1DirectionComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="N" />
+                                    <ComboBoxItem Content="NE" />
+                                    <ComboBoxItem Content="E" />
+                                    <ComboBoxItem Content="SE" />
+                                    <ComboBoxItem Content="S" />
+                                    <ComboBoxItem Content="SW" />
+                                    <ComboBoxItem Content="W" />
+                                    <ComboBoxItem Content="NW" />
+                                </ComboBox>
+
+                                <TextBlock Text="Vehicle 2 Position (if multi-vehicle)" />
+                                <ComboBox x:Name="Vehicle2PositionComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="North" />
+                                    <ComboBoxItem Content="South" />
+                                    <ComboBoxItem Content="East" />
+                                    <ComboBoxItem Content="West" />
+                                    <ComboBoxItem Content="Center" />
+                                </ComboBox>
+
+                                <TextBlock Text="Vehicle 2 Direction of Travel (if multi-vehicle)" />
+                                <ComboBox x:Name="Vehicle2DirectionComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="N" />
+                                    <ComboBoxItem Content="NE" />
+                                    <ComboBoxItem Content="E" />
+                                    <ComboBoxItem Content="SE" />
+                                    <ComboBoxItem Content="S" />
+                                    <ComboBoxItem Content="SW" />
+                                    <ComboBoxItem Content="W" />
+                                    <ComboBoxItem Content="NW" />
+                                </ComboBox>
+
+                                <TextBlock Text="Damage Zones (check at least one)" />
+                                <WrapPanel Margin="0,4,0,10">
+                                    <CheckBox x:Name="DamageFrontCheckBox" Content="Front" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="DamageRearCheckBox" Content="Rear" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="DamageDriverCheckBox" Content="Driver Side" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="DamagePassengerCheckBox" Content="Passenger Side" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="DamageRoofCheckBox" Content="Roof" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="DamageUnderCheckBox" Content="Undercarriage" Margin="0,0,12,6" />
+                                </WrapPanel>
+
+                                <TextBlock Text="Road/Scene Factors (check at least one)" />
+                                <WrapPanel Margin="0,4,0,10">
+                                    <CheckBox x:Name="FactorIntersectionCheckBox" Content="Intersection" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="FactorLaneMergeCheckBox" Content="Lane Merge" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="FactorParkedCheckBox" Content="Parked Vehicle" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="FactorMedianCheckBox" Content="Median/Divider" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="FactorGravelCheckBox" Content="Gravel/Dirt" Margin="0,0,12,6" />
+                                    <CheckBox x:Name="FactorWetCheckBox" Content="Wet Surface" Margin="0,0,12,6" />
+                                </WrapPanel>
+
+                                <TextBlock Text="Confidence Level" />
+                                <ComboBox x:Name="ConfidenceComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="High" />
+                                    <ComboBoxItem Content="Medium" />
+                                    <ComboBoxItem Content="Low" />
+                                </ComboBox>
+
+                                <TextBlock Text="Assumptions &amp; Ambiguities" />
+                                <TextBox x:Name="AssumptionsTextBox" Margin="0,4,0,10" Height="80" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="Step5Panel" Visibility="Collapsed">
+                                <TextBlock Text="Vehicle &amp; Injury Information" FontWeight="Bold" Margin="0,0,0,10" />
+
+                                <TextBlock Text="Primary Vehicle Make" />
+                                <TextBox x:Name="PrimaryMakeTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Primary Vehicle Model" />
+                                <TextBox x:Name="PrimaryModelTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Primary Vehicle Year" />
+                                <TextBox x:Name="PrimaryYearTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Primary Vehicle Damage Level" />
+                                <ComboBox x:Name="PrimaryDamageComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="None" />
+                                    <ComboBoxItem Content="Minor" />
+                                    <ComboBoxItem Content="Moderate" />
+                                    <ComboBoxItem Content="Severe" />
+                                    <ComboBoxItem Content="Total Loss" />
+                                </ComboBox>
+
+                                <CheckBox x:Name="MultiVehicleCheckBox" Content="Multi-vehicle incident" Margin="0,0,0,10" />
+
+                                <TextBlock Text="Other Vehicle Make" />
+                                <TextBox x:Name="OtherMakeTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Other Vehicle Model" />
+                                <TextBox x:Name="OtherModelTextBox" Margin="0,4,0,10" />
+
+                                <TextBlock Text="Other Vehicle Damage Level" />
+                                <ComboBox x:Name="OtherDamageComboBox" Margin="0,4,0,10">
+                                    <ComboBoxItem Content="None" />
+                                    <ComboBoxItem Content="Minor" />
+                                    <ComboBoxItem Content="Moderate" />
+                                    <ComboBoxItem Content="Severe" />
+                                    <ComboBoxItem Content="Total Loss" />
+                                </ComboBox>
+
+                                <TextBlock Text="Injuries Reported (required)" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
+                                    <RadioButton x:Name="InjuriesYesRadio" Content="Yes" Margin="0,0,20,0" />
+                                    <RadioButton x:Name="InjuriesNoRadio" Content="No" />
+                                </StackPanel>
+
+                                <TextBlock Text="Witness Present (required)" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
+                                    <RadioButton x:Name="WitnessYesRadio" Content="Yes" Margin="0,0,20,0" />
+                                    <RadioButton x:Name="WitnessNoRadio" Content="No" />
+                                </StackPanel>
+
+                                <TextBlock Text="Witness Name (optional)" />
+                                <TextBox x:Name="WitnessNameTextBox" Margin="0,4,0,10" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="Step6Panel" Visibility="Collapsed">
+                                <TextBlock Text="Review &amp; Submit" FontWeight="Bold" FontSize="14" Margin="0,0,0,10" />
+                                <TextBlock Text="Required Checklist" FontWeight="SemiBold" />
+                                <TextBlock Text="- Claimant info complete" />
+                                <TextBlock Text="- Incident details complete" />
+                                <TextBlock Text="- Image analysis complete" />
+                                <TextBlock Text="- Vehicle/injury info complete" Margin="0,0,0,12" />
+
+                                <TextBlock Text="Claim Summary" FontWeight="SemiBold" />
+                                <TextBox x:Name="ReviewSummaryTextBox" Height="300" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+
+                <Border Grid.Row="2" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" Padding="10" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancel" Width="100" Margin="0,0,8,0" Click="CancelClaimButton_Click" />
+                        <Button x:Name="BackStepButton" Content="&lt; Back" Width="100" Margin="0,0,8,0" Click="BackStepButton_Click" />
+                        <Button x:Name="NextStepButton" Content="Next >" Width="100" Margin="0,0,8,0" Click="NextStepButton_Click" />
+                        <Button x:Name="SubmitClaimButton" Content="Submit Claim" Width="120" Visibility="Collapsed" Click="SubmitClaimButton_Click" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="ConfirmationPanel" Visibility="Collapsed">
+                <Border Width="560" Padding="20" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="CLAIM SUBMITTED SUCCESSFULLY" FontWeight="Bold" FontSize="16" Margin="0,0,0,12" />
+                        <TextBlock x:Name="ConfirmationText" TextWrapping="Wrap" Margin="0,0,0,16" />
+                        <Button Content="Return to Main Menu" Width="180" HorizontalAlignment="Right" Click="ReturnToMainMenuButton_Click" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="SearchPanel" Visibility="Collapsed">
+                <Border Padding="20" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="SEARCH CLAIMS" FontWeight="Bold" FontSize="16" Margin="0,0,0,12" />
+
+                        <TextBlock Text="Search by claim number or claimant name" />
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
+                            <TextBox x:Name="SearchTextBox" Width="320" Margin="0,0,8,0" />
+                            <Button Content="Search" Width="100" Click="SearchButton_Click" />
+                        </StackPanel>
+
+                        <ListBox x:Name="SearchResultsListBox" Height="350" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                            <Button Content="Back to Main Menu" Width="160" Click="BackToMenuFromSearchButton_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="AdminPanel" Visibility="Collapsed">
+                <Border Padding="20" Background="#F5F5F5" BorderBrush="#7A7A7A" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="SYSTEM ADMINISTRATION" FontWeight="Bold" FontSize="16" Margin="0,0,0,12" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Button Content="Reset Database to Defaults" Width="220" Margin="0,0,8,0" Click="ResetDatabaseButton_Click" />
+                            <Button Content="Refresh Stats" Width="120" Click="RefreshStatsButton_Click" />
+                        </StackPanel>
+
+                        <TextBox x:Name="AdminStatsTextBox" Height="320" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                            <Button Content="Back to Main Menu" Width="160" Click="BackToMenuFromAdminButton_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
