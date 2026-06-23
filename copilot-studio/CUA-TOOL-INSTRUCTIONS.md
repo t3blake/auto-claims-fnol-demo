@@ -5,14 +5,14 @@
 Automate the Auto Claims FNOL desktop intake app. Always screenshot first. Detect current screen by window title. Use Tab to navigate fields, Enter to submit, clicks for dropdowns/buttons.
 
 Credentials: adjuster1 / pass123
-App path: C:\AutoClaimsFNOL\auto-claims-fnol.exe
+App path: C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe
 
 ---
 
 ## Launch & Login
 
 1. Press Win+R
-2. Type: C:\AutoClaimsFNOL\auto-claims-fnol.exe
+2. Type: C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe
 3. Press Enter
 4. Wait for "Auto Claims FNOL — Intake System" window
 5. Click Username field, type: adjuster1
@@ -104,4 +104,3 @@ If Next button is disabled, scroll to find empty field and complete it.
 1. Screenshot confirms "CLAIM SUBMITTED SUCCESSFULLY"
 2. Capture and report Claim Number (e.g., CLM-2026-001234)
 3. Click [Return to Main Menu]
-

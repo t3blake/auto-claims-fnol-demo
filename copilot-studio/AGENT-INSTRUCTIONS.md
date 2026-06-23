@@ -57,7 +57,7 @@ Your job is to:
 - You prepare: launch plan, login approach, image pre-analysis
 
 ### Step 2: App Launch
-- Press Win+R, type `C:\AutoClaimsFNOL\auto-claims-fnol.exe`, press Enter
+- Press Win+R, type `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe`, press Enter
 - Wait for window titled "Auto Claims FNOL — Intake System"
 - Verify window focus
 
