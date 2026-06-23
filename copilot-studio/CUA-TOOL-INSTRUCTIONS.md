@@ -9,6 +9,22 @@ App path: C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe
 
 ---
 
+## Step 0: Download Image to W365
+
+Before launching the app, download the accident image from the OneDrive/SharePoint URL provided by the user:
+
+1. Open Microsoft Edge
+2. Navigate to the OneDrive/SharePoint URL provided
+3. Sign in if prompted (use the W365 user's credentials)
+4. Download the file: click the download button or use the three-dot menu → Download
+5. Default save location: C:\Users\<username>\Downloads\
+6. Note the exact filename (e.g., accident.jpg)
+7. Close or minimize Edge
+
+Staged image path: C:\Users\<username>\Downloads\<filename> — use this in Page 3.
+
+---
+
 ## Launch & Login
 
 1. Press Win+R
@@ -45,9 +61,10 @@ App path: C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe
 
 **Page 3 - Image Upload:**
 1. Click [Browse...] button
-2. Select image file from Windows dialog, click [Open]
-3. Verify image preview appears and Status = "Image attached"
-4. Click [Next >]
+2. In the Windows file dialog, navigate to C:\Users\<username>\Downloads\
+3. Select the image downloaded in Step 0, click [Open]
+4. Verify image preview appears and Status = "Image attached"
+5. Click [Next >]
 
 ## Page 4: Image Analysis (CRITICAL - ALL FIELDS REQUIRED)
 
