@@ -5,17 +5,28 @@ param(
     [switch]$Force
 )
 
-$ReleaseDir = "..\src\AutoClaimsFnolApp\bin\Release\net8.0-windows"
+$ProjectPath = "..\src\AutoClaimsFnolApp\AutoClaimsFnolApp.csproj"
+$ReleaseDir = "..\src\AutoClaimsFnolApp\bin\Release\net8.0-windows\publish-sc"
 $SourceDir = ".\source"
 $OutputDir = ".\output"
 $IntuneWinUtil = ".\IntuneWinAppUtil.exe"
 
 Write-Host "Auto Claims FNOL — Intune Package Builder" -ForegroundColor Cyan
 
-# Check if app is built
-if (-not (Test-Path $ReleaseDir)) {
-    Write-Host "ERROR: Release build not found at: $ReleaseDir" -ForegroundColor Red
-    Write-Host "Please build the app first with: dotnet publish -c Release -r win-x64" -ForegroundColor Yellow
+# Publish a SELF-CONTAINED win-x64 build so the target machine needs NO .NET runtime installed.
+# A framework-dependent build would require the .NET 8 Desktop Runtime as a separate prerequisite;
+# bundling the runtime keeps the .intunewin a single standalone artifact that runs on a clean
+# Windows box (the W365 Cloud PC has no .NET runtime pre-installed).
+Write-Host "Publishing self-contained win-x64 build..." -ForegroundColor Cyan
+dotnet publish $ProjectPath -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o $ReleaseDir
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: dotnet publish failed" -ForegroundColor Red
+    exit 1
+}
+
+# Confirm the runtime was actually bundled (self-contained), not just the app DLLs
+if (-not (Test-Path (Join-Path $ReleaseDir "coreclr.dll"))) {
+    Write-Host "ERROR: publish output is not self-contained (coreclr.dll missing)" -ForegroundColor Red
     exit 1
 }
 

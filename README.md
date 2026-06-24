@@ -25,7 +25,7 @@ A legacy **auto insurance claims intake application** built to demonstrate how a
 | **Microsoft 365 license** | E3/E5 or equivalent with Copilot Studio entitlement |
 | **Copilot Studio access** | https://copilotstudio.microsoft.com must be enabled in your tenant |
 | **Windows 365 Cloud PC** | Provisioned in the same tenant, with user assigned (or any Windows machine for local testing) |
-| **Auto Claims FNOL installed on the PC** | `AutoClaimsFnolApp.exe` deployed (via Intune or manual install) |
+| **Auto Claims FNOL installed on the PC** | `AutoClaimsFnolApp.exe` deployed (via Intune or manual install). The build is **self-contained** — the .NET 8 runtime is bundled, so the target machine needs **no .NET runtime installed**. |
 | **App is runnable by the signed-in user** | The interactive user the agent controls must be able to **execute** `AutoClaimsFnolApp.exe` — no blocking ACL or "you don't have permission to open this file" error. Verify by double-clicking it once as that user. |
 | **Computer Use preview enabled** | W365 Agents / Computer Use must be enabled in tenant |
 | **Work IQ (Copilot) enabled** | The agent uses Work IQ Copilot to analyze the accident image from its OneDrive/SharePoint link |
@@ -46,7 +46,7 @@ Go to the [latest release](https://github.com/t3blake/auto-claims-fnol-demo/rele
    (Or run from admin terminal: `powershell -ExecutionPolicy Bypass -File Install.ps1`)
 4. The script installs to `C:\AutoClaimsFNOL\` and creates a desktop shortcut called "Auto Claims FNOL"
 
-**Even simpler:** If you just want to test locally, extract `AutoClaimsFnolApp.exe` and `claims-fnol.db` to `C:\AutoClaimsFNOL\` manually. The agent instructions expect this exact path.
+**Even simpler:** If you just want to test locally, extract **all** files from the zip to `C:\AutoClaimsFNOL\` (the app is self-contained, so the exe needs the bundled runtime files alongside it). The agent instructions expect this exact path.
 
 #### Option B: Deploy via Intune
 
@@ -228,15 +228,10 @@ You only need this if modifying the app itself. For demos, use the pre-built rel
 cd src
 dotnet run
 
-# Publish self-contained exe
-dotnet publish -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ..\dist
-
-# Rebuild Intune package
-Copy-Item dist\AutoClaimsFnolApp.exe intune\source\
-Copy-Item dist\claims-fnol.db  intune\source\
-Copy-Item intune\Install.ps1    intune\source\
-Copy-Item intune\Uninstall.ps1  intune\source\
-.\intune\IntuneWinAppUtil.exe -c intune\source -s Install.ps1 -o intune\output -q
+# Rebuild the self-contained Intune package (publishes the app with the .NET
+# runtime bundled, stages it, and produces Install.intunewin)
+cd ..\intune
+.\Build.ps1
 ```
 
 ---

@@ -14,23 +14,22 @@ This folder contains the scripts and configuration needed to package Auto Claims
 
 ### Prerequisites
 - Windows machine with PowerShell 5.1+
+- **.NET 8 SDK** (the build publishes the app from source) — https://dotnet.microsoft.com/download/dotnet/8.0
 - `IntuneWinAppUtil.exe` (included in this folder, or download from [Microsoft](https://github.com/microsoft/microsoft-intune-app-sdk-dotnet/releases))
+
+> The package is published **self-contained** (`--self-contained true`), so the .NET 8 runtime is bundled inside the app folder. Target machines (including the W365 Cloud PC) need **no .NET runtime installed** — that's only a build-time requirement here.
 
 ### Steps
 
-1. **Copy app files to staging folder:**
+1. **Build the self-contained package:**
    ```powershell
-   Copy-Item ..\src\AutoClaimsFnolApp\bin\Release\net8.0-windows\* intune\source\ -Recurse
+   cd intune
+   .\Build.ps1
    ```
 
-2. **Run the packaging script:**
-   ```powershell
-   .\intune\IntuneWinAppUtil.exe -c intune\source -s Install.ps1 -o intune\output -q
-   ```
+   This publishes a self-contained `win-x64` build (the .NET runtime is bundled, so target machines need no runtime), stages it, and generates `Install.intunewin` in the `output/` folder.
 
-   This generates `AutoClaimsFnolApp.intunewin` in the `output/` folder.
-
-3. **Upload to Intune:**
+2. **Upload to Intune:**
    - Open Microsoft Intune admin center
    - Go to **Apps** → **Windows** → **Add** → **Windows app (Win32)**
    - Upload the `.intunewin` file as the app package
@@ -43,11 +42,11 @@ This folder contains the scripts and configuration needed to package Auto Claims
      - **OS architecture:** 64-bit
      - **Minimum OS:** Windows 10 1903
 
-4. **Detection Rule:**
+3. **Detection Rule:**
    - Select "Use a custom detection script"
    - Upload `Detect.ps1` from this folder
 
-5. **Assign the app:**
+4. **Assign the app:**
    - Add assignment to device or user group
    - Set as **Required**
    - Wait for deployment to Windows 365 Cloud PC
