@@ -5,7 +5,7 @@
 $InstallPath = "C:\AutoClaimsFNOL"
 $ExeName = "AutoClaimsFnolApp.exe"
 $ExePath = Join-Path -Path $InstallPath -ChildPath $ExeName
-$ExpectedVersion = "1.0.0"
+$ExpectedVersion = "1.2.0"
 $MarkerPath = Join-Path -Path $InstallPath -ChildPath "version.txt"
 
 # Report "installed" only when the exe exists AND the version marker matches. The marker is written

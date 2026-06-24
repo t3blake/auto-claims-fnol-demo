@@ -5,7 +5,7 @@
 $InstallPath = "C:\AutoClaimsFNOL"
 $AppName = "Auto Claims FNOL"
 $ExeName = "AutoClaimsFnolApp.exe"
-$AppVersion = "1.0.0"
+$AppVersion = "1.2.0"
 
 # Create installation directory
 if (-not (Test-Path $InstallPath)) {
