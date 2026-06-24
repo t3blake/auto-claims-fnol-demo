@@ -157,3 +157,15 @@ If a value wasn't provided, derive it from the on-screen image preview. If Next 
 1. Screenshot confirms "CLAIM SUBMITTED SUCCESSFULLY"
 2. Capture and report Claim Number (e.g., CLM-2026-001234)
 3. Click [Return to Main Menu]
+
+## Cleanup: Delete the Staged Image(s) (AFTER SUBMIT)
+
+The submitted claim records the image *filename and description*, not the image bytes, so the local copy in Downloads is no longer needed once the claim is submitted. Delete it so downloaded images don't pile up on the W365 PC.
+
+1. Do this only after the Confirmation page showed "CLAIM SUBMITTED SUCCESSFULLY" and you captured the Claim Number.
+2. Press Win+R.
+3. For each file you staged in Step 0, type a delete command for its exact path and press Enter:
+   `cmd /c del /f /q "C:\Users\<username>\Downloads\<filename>"`
+   Use the exact filename(s) you noted in Step 0. (`del` removes the file immediately — it does not go to the Recycle Bin, so it actually frees the space.)
+4. Delete only the specific file(s) you staged for this claim. Never clear the whole Downloads folder — it may contain unrelated user files.
+5. Screenshot to confirm the file is gone, then you're done.
