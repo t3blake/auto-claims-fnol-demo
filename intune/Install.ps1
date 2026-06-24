@@ -5,6 +5,7 @@
 $InstallPath = "C:\AutoClaimsFNOL"
 $AppName = "Auto Claims FNOL"
 $ExeName = "AutoClaimsFnolApp.exe"
+$AppVersion = "1.0.0"
 
 # Create installation directory
 if (-not (Test-Path $InstallPath)) {
@@ -57,3 +58,11 @@ Write-Output "Created desktop shortcut: $ShortcutPath"
 
 Write-Output "Installation complete. App installed to: $InstallPath"
 Write-Output "Desktop shortcut created: $AppName.lnk"
+
+# Version marker — written LAST so its presence proves the install (including the ACL fix) completed.
+# Use a FILE marker, not registry: the Intune install context and the detection script can differ in
+# bitness, and HKLM:\SOFTWARE is redirected to WOW6432Node under 32-bit, which would desync them.
+# A file under C:\AutoClaimsFNOL has no such redirection. Bump $AppVersion each release so existing
+# installs fail detection and get reinstalled (no supersedence needed).
+Set-Content -Path (Join-Path $InstallPath "version.txt") -Value $AppVersion -Encoding ascii -Force
+Write-Output "Wrote version marker: $InstallPath\version.txt = $AppVersion"
