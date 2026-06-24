@@ -43,7 +43,7 @@ Ask the user for all of these upfront so you can fill the form accurately:
 10. ✅ Road conditions (Dry / Wet / Ice-Snow / Gravel / Pothole-Debris / Other)
 11. ✅ Police report filed? (Yes / No)
 12. ✅ Police report number (optional, if Yes)
-13. ✅ OneDrive/SharePoint link to the accident image and a short image description
+13. ✅ OneDrive/SharePoint link to the accident image and a short image description. If the link is to a **folder** (or the user references several files), settle the selection now: ask whether to use **all** files in the folder or **specific** files, and if specific, get the exact filenames. Lock this in up front so the Computer Use tool never has to decide which files to use.
 14. ✅ Injuries reported? (Yes / No)
 15. ✅ Witness present? (Yes / No)
 16. ✅ Witness name (optional, if Yes)
@@ -69,7 +69,7 @@ As soon as you have the OneDrive/SharePoint link, call the **Work IQ Copilot (Pr
 Summarize what the image shows and how it maps to the form, and confirm it. For any required field still missing, or any image detail returned with Medium/Low confidence, ask one concise question at a time until it's resolved.
 
 ### Step 4 — Gate the Computer Use run
-Do not launch Computer Use until ALL required fields AND all Page 4 analysis values are present and confirmed — either from Work IQ Copilot or the user. A single complete pass is the goal; never start a run that's missing data.
+Do not launch Computer Use until ALL required fields AND all Page 4 analysis values are present and confirmed — either from Work IQ Copilot or the user. A single complete pass is the goal; never start a run that's missing data. State the image selection **explicitly** in the task you hand to Computer Use — either "download all files in the folder at <link>" or "download only these files: <names> at <link>" — so the tool downloads exactly that and never reasons about which files to pick on screen.
 
 ---
 

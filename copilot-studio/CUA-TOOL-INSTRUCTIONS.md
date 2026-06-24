@@ -42,22 +42,26 @@ Before launching the app, make sure you have the values the desktop form will re
 - Injuries reported (Yes/No)
 - Witness present (Yes/No) and witness name if applicable
 
-## Step 0: Stage the Accident Image on the W365 PC (BEFORE APP LAUNCH)
+## Step 0: Stage the Accident Image(s) on the W365 PC (BEFORE APP LAUNCH)
 
-Page 3 uploads a local file, so the accident image must exist on the PC before launching the app.
+Page 3 uploads local files, so every accident image must exist on the PC before launching the app.
+
+**The task already tells you which file(s) to use — either "all files in the linked folder" or a specific named list. Download exactly those and nothing else. Do not open, compare, or reason about which files are relevant; that decision was made up front. This keeps the run fast.**
 
 - **If a local copy already exists** (e.g., the orchestrator or a prior step staged it in `C:\Users\<username>\Downloads\`), use that file and skip the download below.
-- **If you must download it** from the OneDrive/SharePoint URL and a sign-in or MFA prompt appears, follow the **MFA** section above — screenshot the number, surface it, and wait. Do not cancel or loop.
+- **If you must download** from the OneDrive/SharePoint URL and a sign-in or MFA prompt appears, follow the **MFA** section above — screenshot the number, surface it, and wait. Do not cancel or loop.
 
 1. Open Microsoft Edge
 2. Navigate to the OneDrive/SharePoint URL provided
 3. Sign in if prompted (use the W365 user's credentials)
-4. Download the file: click the download button or use the three-dot menu → Download
+4. Download per the task's selection:
+   - **All files in the folder:** use the folder's Select all → Download (or download each file in turn).
+   - **Specific files:** download only the named file(s) — do not browse or pick others.
 5. Default save location: C:\Users\<username>\Downloads\
-6. Note the exact filename (e.g., accident.jpg)
+6. Note the exact filename(s) (e.g., accident.jpg)
 7. Close or minimize Edge
 
-Staged image path: C:\Users\<username>\Downloads\<filename> — use this in Page 3.
+Staged image path(s): C:\Users\<username>\Downloads\<filename> — use these in Page 3.
 
 ---
 
@@ -95,12 +99,13 @@ Staged image path: C:\Users\<username>\Downloads\<filename> — use this in Page
 7. Click [Next >]
 
 **Page 3 - Image Upload:**
+For each file you staged in Step 0, add it (the app supports multiple images):
 1. Click into the "Image Description" field and type a short description (e.g., "Front-end collision damage")
 2. Click the [Add Image...] button
 3. In the Windows file dialog, navigate to C:\Users\<username>\Downloads\
-4. Select the image downloaded in Step 0, click [Open]
-5. Verify the file appears in the "Uploaded Images" list, the preview shows it, and the status no longer reads "No images uploaded"
-6. At least one image is required to proceed. Click [Next >]
+4. Select the staged file, click [Open]
+5. Verify it appears in the "Uploaded Images" list and the preview shows it. Repeat steps 1-4 for any remaining staged files.
+6. When all staged files are added (at least one is required), the status no longer reads "No images uploaded". Click [Next >]
 
 ## Page 4: Image Analysis (CRITICAL - ALL FIELDS REQUIRED)
 
