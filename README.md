@@ -50,9 +50,9 @@ Go to the [latest release](https://github.com/t3blake/auto-claims-fnol-demo/rele
 
 #### Option B: Deploy via Intune
 
-1. Download **Install.intunewin** from the release
+1. Download **AutoClaimsFNOL.intunewin** from the release
 2. In **Microsoft Intune admin center**, go to **Apps → Windows → Add → Windows app (Win32)**
-3. Upload `Install.intunewin` as the app package file
+3. Upload `AutoClaimsFNOL.intunewin` as the app package file
 4. Configure:
 
    | Setting | Value |
@@ -229,7 +229,7 @@ cd src
 dotnet run
 
 # Rebuild the self-contained Intune package (publishes the app with the .NET
-# runtime bundled, stages it, and produces Install.intunewin)
+# runtime bundled, stages it, and produces AutoClaimsFNOL.intunewin)
 cd ..\intune
 .\Build.ps1
 ```

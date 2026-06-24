@@ -27,7 +27,7 @@ This folder contains the scripts and configuration needed to package Auto Claims
    .\Build.ps1
    ```
 
-   This publishes a self-contained `win-x64` build (the .NET runtime is bundled, so target machines need no runtime), stages it, and generates `Install.intunewin` in the `output/` folder.
+   This publishes a self-contained `win-x64` build (the .NET runtime is bundled, so target machines need no runtime), stages it, and generates `AutoClaimsFNOL.intunewin` in the `output/` folder.
 
 2. **Upload to Intune:**
    - Open Microsoft Intune admin center

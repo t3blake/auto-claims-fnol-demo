@@ -53,7 +53,7 @@ if (-not (Test-Path $OutputDir)) {
 # Check if IntuneWinAppUtil exists
 if (-not (Test-Path $IntuneWinUtil)) {
     Write-Host "ERROR: IntuneWinAppUtil.exe not found" -ForegroundColor Red
-    Write-Host "Download from: https://github.com/microsoft/microsoft-intune-app-sdk-dotnet/releases" -ForegroundColor Yellow
+    Write-Host "Download from: https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool" -ForegroundColor Yellow
     exit 1
 }
 
@@ -62,7 +62,12 @@ Write-Host "Building .intunewin package..." -ForegroundColor Cyan
 & $IntuneWinUtil -c $SourceDir -s Install.ps1 -o $OutputDir -q
 
 if ($LASTEXITCODE -eq 0) {
-    $PackageFile = Get-ChildItem "$OutputDir\*.intunewin" | Select-Object -First 1
+    # IntuneWinAppUtil names the output after the setup file (Install.ps1 -> Install.intunewin).
+    # Rename to the release-facing asset name so local builds, the GitHub Action, and the
+    # published GitHub release all use the same descriptive name.
+    $finalPath = Join-Path $OutputDir "AutoClaimsFNOL.intunewin"
+    Move-Item -Path (Join-Path $OutputDir "Install.intunewin") -Destination $finalPath -Force
+    $PackageFile = Get-Item $finalPath
     Write-Host "Package built successfully!" -ForegroundColor Green
     Write-Host "Output: $($PackageFile.FullName)" -ForegroundColor Green
     Write-Host "`nNext steps:" -ForegroundColor Cyan

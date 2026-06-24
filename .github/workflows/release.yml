@@ -10,46 +10,47 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-    
-    - name: Restore dependencies
-      run: dotnet restore src/AutoClaimsFnolApp/AutoClaimsFnolApp.csproj
-    
-    - name: Build Release
-      run: dotnet publish -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o dist/release src/AutoClaimsFnolApp/AutoClaimsFnolApp.csproj
-    
-    - name: Copy files to Intune staging
-      run: |
-        Copy-Item dist\release\* intune\source\ -Recurse -Force
-        Copy-Item intune\Install.ps1 intune\source\
-        Copy-Item intune\Uninstall.ps1 intune\source\
-        Copy-Item intune\Detect.ps1 intune\source\
+
+    - name: Download latest IntuneWinAppUtil (Win32 Content Prep Tool)
       shell: powershell
-    
-    - name: Download IntuneWinAppUtil
       run: |
-        $url = "https://github.com/microsoft/microsoft-intune-app-sdk-dotnet/releases/download/7.2.2/IntuneWinAppUtil.exe"
+        # Pull the tool straight from the repo's master branch so it's always the
+        # latest published build — no pinned, drifting version to maintain.
+        $url = "https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool/raw/master/IntuneWinAppUtil.exe"
         Invoke-WebRequest -Uri $url -OutFile intune\IntuneWinAppUtil.exe
+
+    - name: Build self-contained Intune package
       shell: powershell
-    
-    - name: Package for Intune
+      working-directory: intune
+      run: .\Build.ps1
+
+    - name: Stage manual-install zip
+      shell: powershell
       run: |
-        .\intune\IntuneWinAppUtil.exe -c intune\source -s Install.ps1 -o intune\output -q
-      shell: powershell
-    
-    - name: Upload to Release
-      uses: softprops/action-gh-release@v1
+        # Bundle the full self-contained app payload + install scripts so the
+        # ManualInstall.zip release asset works on a clean machine with no .NET runtime.
+        $publish = "src\AutoClaimsFnolApp\bin\Release\net8.0-windows\publish-sc"
+        $stage = "manual-install"
+        New-Item -ItemType Directory -Path $stage -Force | Out-Null
+        Copy-Item "$publish\*" $stage -Recurse -Force
+        Copy-Item intune\Install.ps1 $stage
+        Copy-Item intune\Uninstall.ps1 $stage
+        Copy-Item intune\Detect.ps1 $stage
+        Compress-Archive -Path "$stage\*" -DestinationPath ManualInstall.zip -Force
+
+    - name: Upload assets to release
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          dist/release/AutoClaimsFnolApp.exe
-          dist/release/claims-fnol.db
-          intune/output/*.intunewin
+          intune/output/AutoClaimsFNOL.intunewin
+          ManualInstall.zip
         draft: false
         prerelease: false
       env:
