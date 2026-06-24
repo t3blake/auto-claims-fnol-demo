@@ -2,12 +2,17 @@
 
 A legacy **auto insurance claims intake application** built to demonstrate how a Copilot Studio Computer-Use Agent can analyze hand-drawn accident sketches or photos and autonomously fill claim forms in a legacy desktop system.
 
+![Auto Claims FNOL — New Claim, Page 1 of 6: Claimant Information](docs/images/app-page1-claimant.png)
+
+*The Computer-Use tool drives this legacy WPF intake app screen by screen. Here's Page 1 of the 6-page New Claim flow — "Windows forms-era" styling with required/optional fields and a fixed Back / Next wizard it can reliably navigate.*
+
 **Key capabilities:**
-- ✓ Image upload (hand-drawn accident sketch or photo)
-- ✓ Computer-Use Agent reads the image, extracts incident details
-- ✓ Agent autonomously fills multi-page claim form
-- ✓ Hard-block on incomplete image analysis (enforces agent's core value)
-- ✓ Agent asks clarifying question if confidence low on critical field
+- ✓ Accident image provided as a OneDrive/SharePoint link (hand-drawn sketch or photo)
+- ✓ Work IQ Copilot analyzes the image up front, in chat, before any automation
+- ✓ Orchestrator confirms every required field with the user, then runs Computer Use once
+- ✓ Computer-Use tool fills the multi-page claim form in a single complete pass
+- ✓ Hard-block on incomplete image analysis (enforces the form's core value)
+- ✓ Agent asks a clarifying question if confidence is low on a critical field
 - ✓ Submit to adjuster review queue
 - ✓ Resettable for repeat demos
 
@@ -20,8 +25,10 @@ A legacy **auto insurance claims intake application** built to demonstrate how a
 | **Microsoft 365 license** | E3/E5 or equivalent with Copilot Studio entitlement |
 | **Copilot Studio access** | https://copilotstudio.microsoft.com must be enabled in your tenant |
 | **Windows 365 Cloud PC** | Provisioned in the same tenant, with user assigned (or any Windows machine for local testing) |
-| **Auto Claims FNOL installed on the PC** | `auto-claims-fnol.exe` deployed (via Intune or manual install) |
+| **Auto Claims FNOL installed on the PC** | `AutoClaimsFnolApp.exe` deployed (via Intune or manual install) |
+| **App is runnable by the signed-in user** | The interactive user the agent controls must be able to **execute** `AutoClaimsFnolApp.exe` — no blocking ACL or "you don't have permission to open this file" error. Verify by double-clicking it once as that user. |
 | **Computer Use preview enabled** | W365 Agents / Computer Use must be enabled in tenant |
+| **Work IQ (Copilot) enabled** | The agent uses Work IQ Copilot to analyze the accident image from its OneDrive/SharePoint link |
 
 ---
 
@@ -39,7 +46,7 @@ Go to the [latest release](https://github.com/t3blake/auto-claims-fnol-demo/rele
    (Or run from admin terminal: `powershell -ExecutionPolicy Bypass -File Install.ps1`)
 4. The script installs to `C:\AutoClaimsFNOL\` and creates a desktop shortcut called "Auto Claims FNOL"
 
-**Even simpler:** If you just want to test locally, extract `auto-claims-fnol.exe` and `claims-fnol.db` to `C:\AutoClaimsFNOL\` manually. The agent instructions expect this exact path.
+**Even simpler:** If you just want to test locally, extract `AutoClaimsFnolApp.exe` and `claims-fnol.db` to `C:\AutoClaimsFNOL\` manually. The agent instructions expect this exact path.
 
 #### Option B: Deploy via Intune
 
@@ -80,19 +87,17 @@ Go to the [latest release](https://github.com/t3blake/auto-claims-fnol-demo/rele
 
 3. Enable the **Computer Use** tool on the agent
 4. Point the agent at the **Windows 365 Cloud PC** (or local machine) where the app is deployed
-5. **Set the model** to **Claude Sonnet 4.5** or newer
-   - Vision-heavy, instruction-following task — fast chat-tier models outperform reasoning models
-   - Avoid reasoning-class models (GPT-5 Reasoning, Claude Opus) — they add latency with no benefit
+5. **Enable the Work IQ Copilot (Preview) tool** — this analyzes the accident image from its OneDrive/SharePoint link, up front in chat, before Computer Use runs
+6. **Set the two models** — this solution uses two model slots with different jobs:
 
-   | Model | Recommendation |
-   |-------|---------------|
-   | Claude Sonnet 4.5 / 4.6 | ✓ Recommended |
-   | GPT-4.1 | ✓ Good alternative |
-   | GPT-5 Chat | ✓ Worth testing |
-   | GPT-5 Auto / Reasoning | ✗ Not recommended |
-   | Claude Opus 4.6 | ✗ Overkill for form navigation |
+   | Slot | Where | Recommended | Why |
+   |------|-------|-------------|-----|
+   | **Orchestrator / agent model** | Agent → Model | **Claude Opus 4.7** | Does the up-front image analysis and reconciliation — vision quality matters here |
+   | **Computer Use tool model** | Computer Use tool → Model | **Claude Sonnet 4.5** | Fast, instruction-following form navigation; reasoning-class models only add latency for clicking/typing |
 
-6. **Disable web search** — agent has everything it needs in Knowledge + instructions
+   > The split is deliberate: don't put a slow reasoning model on the Computer Use tool, and don't put a weak vision model on the orchestrator.
+
+7. **Disable web search** — agent has everything it needs in Knowledge + instructions
 
 > **Tip — Token refresh:** Computer-Use connection can expire if Cloud PC session disconnects. Proactively refresh: **Settings → Connections** in Copilot Studio, find Windows 365 connection, click to refresh.
 
@@ -172,7 +177,7 @@ auto-claims-fnol-demo/
 │   └── [project files]
 │
 ├── dist/                              ← Pre-built exe + database
-│   ├── auto-claims-fnol.exe
+│   ├── AutoClaimsFnolApp.exe
 │   └── claims-fnol.db
 │
 ├── intune/                            ← Intune deployment packaging
@@ -190,10 +195,10 @@ auto-claims-fnol-demo/
 
 | Property | Value |
 |----------|-------|
-| App window title | Auto Claims FNOL — Intake System |
+| App window title | Auto Claims FNOL - Intake System |
 | Desktop shortcut name | Auto Claims FNOL |
 | Install path | `C:\AutoClaimsFNOL\` |
-| Exe name | `auto-claims-fnol.exe` |
+| Exe name | `AutoClaimsFnolApp.exe` |
 | Default login (adjuster) | `adjuster1` / `pass123` |
 | Default login (admin) | `admin` / `admin` |
 | Database | SQLite, local file at exe directory, resets via in-app menu |
@@ -227,7 +232,7 @@ dotnet run
 dotnet publish -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ..\dist
 
 # Rebuild Intune package
-Copy-Item dist\auto-claims-fnol.exe intune\source\
+Copy-Item dist\AutoClaimsFnolApp.exe intune\source\
 Copy-Item dist\claims-fnol.db  intune\source\
 Copy-Item intune\Install.ps1    intune\source\
 Copy-Item intune\Uninstall.ps1  intune\source\

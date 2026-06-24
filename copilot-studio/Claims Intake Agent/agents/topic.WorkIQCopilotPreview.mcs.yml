@@ -1,0 +1,14 @@
+mcs.metadata:
+  componentName: Work IQ Copilot (Preview)
+kind: TaskDialog
+modelDisplayName: Work IQ Copilot (Preview)
+modelDescription: Use Microsoft 365 Copilot to locate and review the user's files in SharePoint and OneDrive — including opening an accident image at a shared link and describing the collision (incident type, number of vehicles, impact type, each vehicle's position and direction of travel, damage zones, road/scene factors, and a confidence level).
+action:
+  kind: InvokeExternalAgentTaskAction
+  connectionReference: cre3e_ClaimsIntakeAgent.shared_a365copilotchatmcp.shared-a365copilotch-4ae5087b-ddd4-4418-94d5-e1421deae4e5
+  connectionProperties:
+    mode: Invoker
+
+  operationDetails:
+    kind: ModelContextProtocolMetadata
+    operationId: mcp_m365copilot

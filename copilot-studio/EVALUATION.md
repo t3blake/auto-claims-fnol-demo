@@ -21,9 +21,12 @@ Four evaluation batches, run sequentially (do **not** run in parallel):
 
 - **Agent deployed in Copilot Studio** (draft mode)
 - **Computer Use tool enabled** and pointed at the Cloud PC
-- **Model set to Claude Sonnet 4.5** or newer
+- **Work IQ Copilot (Preview) tool enabled** (analyzes the accident image up front)
+- **Two models set:** orchestrator/agent → Claude Opus 4.7; Computer Use tool → Claude Sonnet 4.5
+- **Web search disabled**
 - **Knowledge, Agent Instructions, CUA Tool Instructions configured**
-- **App running on Cloud PC:** `C:\AutoClaimsFNOL\auto-claims-fnol.exe`
+- **App running on Cloud PC:** `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe` — and **runnable by the signed-in user** (no "you don't have permission to open this file" ACL block; this is the #1 blocker)
+- **Test image staged twice:** a OneDrive/SharePoint link (for Work IQ Copilot) and a local copy (for the Page 3 upload); pre-downloading avoids a mid-run MFA prompt
 - **Database clean:** Log in as admin, reset to defaults before starting
 
 ---
@@ -56,7 +59,7 @@ Four evaluation batches, run sequentially (do **not** run in parallel):
 
 | Test # | Scenario | Input Prompt | Expected Pass Criteria |
 |--------|----------|--------------|---------------------------|
-| 1.1 | App Launch | "Launch the Auto Claims FNOL app on the Cloud PC." | Window "Auto Claims FNOL — Intake System" opens; no errors |
+| 1.1 | App Launch | "Launch the Auto Claims FNOL app on the Cloud PC." | Window "Auto Claims FNOL - Intake System" opens; no errors |
 | 1.2 | Login Success | "Log in with username adjuster1 and password pass123." | Login succeeds; Main Menu displayed |
 | 1.3 | Login Failure Handling | "Try to log in with wrong password (e.g., 'wrongpass'). Then log in with correct credentials." | Error message shown on first attempt; correct login succeeds on second |
 | 1.4 | Main Menu Navigation | "From Main Menu, navigate to New Claim." | New Claim form Page 1 loads (title shows "Page 1 of 6") |
@@ -71,9 +74,9 @@ Four evaluation batches, run sequentially (do **not** run in parallel):
 
 ## Batch 2: Image Upload & Analysis (7 tests)
 
-**Purpose:** Verify image handling, extraction accuracy, field population.
+**Purpose:** Verify image handling and that Page 4's analysis fields end up correctly populated — from the up-front Work IQ values in the full flow, or the CUA's derive-from-preview fallback when a test supplies only a local image.
 
-**Pre-requisite:** Batch 1 passed; database clean; test images available at `C:\Temp\`
+**Pre-requisite:** Batch 1 passed; database clean; test images staged as a OneDrive/SharePoint link (for Work IQ) and as local copies at `C:\Temp\` (for the Page 3 upload)
 
 **Test Images Needed:**
 - `accident-sketch-2vehicle-tbone.jpg` — Hand-drawn or simple 2-vehicle T-bone
@@ -82,11 +85,11 @@ Four evaluation batches, run sequentially (do **not** run in parallel):
 
 | Test # | Scenario | Input Prompt | Expected Pass Criteria |
 |--------|----------|--------------|---------------------------|
-| 2.1 | Image Upload | "Upload accident-sketch-2vehicle-tbone.jpg from C:\Temp\ to the New Claim form." | Image preview displays; filename shows; status = "Image attached" |
-| 2.2 | Image Analysis Auto-Populate | "After uploading the 2-vehicle T-bone sketch, proceed to Page 4 (Image Analysis). Verify all fields are auto-populated." | Page 4 fields filled: Incident Type = Multi-Vehicle, Impact Type = T-Bone, Vehicle count = 2, damage zones checked, confidence = High or Medium |
+| 2.1 | Image Upload | "Upload accident-sketch-2vehicle-tbone.jpg from C:\Temp\ to the New Claim form." | Image appears in the Uploaded Images list; preview displays; status no longer reads "No images uploaded" |
+| 2.2 | Page 4 Populated From Up-Front Analysis | "After uploading the 2-vehicle T-bone sketch, proceed to Page 4 (Image Analysis). Verify the fields are populated from the up-front Work IQ analysis." | Page 4 fields filled: Incident Type = Multi-Vehicle, Impact Type = T-Bone, Vehicle count = 2, damage zones checked, confidence = High or Medium |
 | 2.3 | Single Vehicle Extraction | "Upload and analyze a single-vehicle accident sketch." | Page 4: Incident Type = Single Vehicle, 1 vehicle detected, damage visible, confidence appropriately set |
 | 2.4 | Multi-Vehicle Extraction | "Upload and analyze a 3-vehicle pile-up sketch." | Page 4: Incident Type = Multi-Vehicle, 3 vehicles detected, chain-reaction pattern inferred, confidence = Medium or High |
-| 2.5 | Low Confidence Escalation | "Upload the ambiguous impact angle image. Agent should ask for clarification on impact type before proceeding." | Agent pauses on Page 4; asks user clarifying question (e.g., "Was this head-on or T-bone?"); waits for response; updates field; continues |
+| 2.5 | Low Confidence Escalation | "Provide the ambiguous impact-angle image. The agent should ask for clarification on impact type during the up-front analysis, before running the form." | Agent pauses during the up-front analysis; asks user a clarifying question (e.g., "Was this head-on or T-bone?"); waits for response; uses the answer when filling Page 4 |
 | 2.6 | Image Analysis Validation Block | "Attempt to submit a claim without completing all Page 4 fields (e.g., no damage zone checkbox checked)." | Form blocks submit; error message shows "Image analysis is incomplete"; agent goes back, completes missing field, retries |
 | 2.7 | No Image Upload Handling | "Start a new claim but skip image upload. Try to proceed." | Page 4 shows "No image provided"; agent either re-uploads image or form blocks submit |
 
@@ -158,7 +161,7 @@ Prompt,Expected Output Grader Type,Expected Output
 
 Example row:
 ```
-"Launch the Auto Claims FNOL app on the Cloud PC.","General quality","Window titled 'Auto Claims FNOL — Intake System' appears; no errors"
+"Launch the Auto Claims FNOL app on the Cloud PC.","General quality","Window titled 'Auto Claims FNOL - Intake System' appears; no errors"
 ```
 
 ---
@@ -186,16 +189,21 @@ Example row:
 ### Common Failures & Fixes
 
 #### Test 1.1 or 1.2: App Won't Launch
-- **Symptom:** Window doesn't appear; or login screen doesn't load
-- **Cause:** App not installed, path wrong, or Windows 365 not connected
+- **Symptom:** Window doesn't appear; or "Windows cannot access… / You don't have permission to open this file"
+- **Cause:** **#1 blocker** — the signed-in user lacks **execute** rights on the exe. Also: app not installed, path wrong, or Windows 365 not connected.
 - **Fix:**
-  1. Verify app installed at `C:\AutoClaimsFNOL\auto-claims-fnol.exe`
-  2. Verify Windows 365 Cloud PC is online and CUA connection active
-  3. Manually test app by launching it on Cloud PC desktop
+  1. As the signed-in user, double-click `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe` — if it won't open, fix the file/folder ACL (or deploy to a per-user executable location). No instruction change works around this.
+  2. Verify the app is installed at that path
+  3. Verify Windows 365 Cloud PC is online and CUA connection active
   4. If manual launch works, retry evaluation
 
+#### Sign-In / MFA Prompt Mid-Run
+- **Symptom:** Edge shows "Verify your identity" / "Enter the number shown to sign in" while staging the image, and the agent cancels or loops
+- **Cause:** downloading the image or opening a OneDrive/SharePoint link triggers Entra MFA
+- **Fix:** the CUA should surface the verification number and **wait** for approval — never cancel/loop. Pre-authenticate Edge on the Cloud PC and pre-download the local image copy before the run to avoid it entirely.
+
 #### Test 2.1 or 2.2: Image Upload or Preview Fails
-- **Symptom:** Browse button clicked, file chooser doesn't open; or image doesn't display in preview
+- **Symptom:** "Add Image..." button clicked, file chooser doesn't open; or image doesn't display in preview
 - **Cause:** File path incorrect, format unsupported, or file corrupted
 - **Fix:**
   1. Verify test image files at `C:\Temp\` on Cloud PC

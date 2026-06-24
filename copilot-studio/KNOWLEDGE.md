@@ -86,13 +86,13 @@ Navigation: Next / Back / Cancel
 **Max size:** 10 MB
 
 **Interaction:**
-- Click Browse button to open file chooser
-- Select image file
-- Image preview displays below
-- Status shows "Image attached" with filename
-- Can click Clear to remove image
+- Type a short description in the Image Description field
+- Click the "Add Image..." button to open the file chooser
+- Select the image file
+- The image appears in the Uploaded Images list and the preview displays it
+- Use "Remove Selected" to remove an image from the list
 
-**Note:** Image upload is optional at this stage, but Page 4 (Image Analysis) requires image data to be meaningful.
+**Note:** At least one image is required to proceed past Page 3 (the Next button is blocked until an image is uploaded).
 
 Navigation: Next / Back / Cancel
 
@@ -102,7 +102,9 @@ Navigation: Next / Back / Cancel
 
 **This section is the core deliverable.** Form cannot submit without all fields complete.
 
-**Auto-populated by agent vision analysis:**
+**How these values are produced:** the agent analyzes the accident image **up front with Work IQ Copilot** (before any filing), confirms anything uncertain with the user, and the Computer Use tool then enters the confirmed values on this page. Computer Use only re-derives a value from the on-screen image if it is missing from the task.
+
+**Fields on this page:**
 - Incident Type (from image): dropdown
 - Number of Vehicles/Objects Detected: integer
 - Estimated Impact Type: dropdown
@@ -173,15 +175,14 @@ Navigation: Next (blocked until all required fields filled) / Back / Cancel
 ### Page 5: Vehicle & Injury Information
 
 **Primary Vehicle (required concept, fields optional):**
-- Make, Model, Year, Color
-- License Plate (optional)
+- Make, Model, Year
 - Damage Level: None, Minor, Moderate, Severe, Total Loss
 
 **Multi-Vehicle Indicator:**
 - Checkbox: "Multi-vehicle incident" (enables Other Vehicle fields)
 
 **Other Vehicle (conditional on multi-vehicle checkbox):**
-- Make, Model, Year, Color, License Plate, Damage Level (same as primary)
+- Make, Model, Damage Level
 
 **Injury & Witness Information (required):**
 - Injuries Reported (radio: Yes / No)
@@ -272,27 +273,23 @@ Navigation: Next / Back / Cancel
 
 ## 8. Workflow Patterns
 
-### Typical Successful Flow
-1. Login (adjuster1 / pass123)
-2. Main Menu → New Claim
-3. Fill 6 pages in order
-4. Submit from Page 6
-5. View confirmation with claim number
-6. Return to Main Menu or log off
+### End-to-End Solution Flow
+1. Agent collects claim basics from the user (claimant, incident, vehicles, injuries, witness) plus the OneDrive/SharePoint image link
+2. Agent analyzes the image **up front with Work IQ Copilot** and reconciles the results with the user
+3. Once every required field (including the Page 4 analysis values) is confirmed, the agent runs the Computer Use tool **once** to file the claim
+4. Computer Use: Login → New Claim → fill Pages 1–6 in order → Submit
+5. Agent reports the claim number from the confirmation page
 
-### With Confidence Check (Agent Asks User)
-1. Pages 1–3 (claimant, incident, image)
-2. Page 4: Agent analyzes image, confidence is Medium or Low on impact type
-3. Agent pauses and asks: "Based on the image, I think the impact was [Type], but I'm not fully confident. Can you confirm?"
-4. User provides clarification
-5. Agent updates field, continues
-6. Pages 5–6, submit
+### With Confidence Check (Agent Asks User — before filing)
+1. Agent analyzes the image with Work IQ Copilot; confidence is Medium or Low on impact type
+2. Agent pauses and asks: "Based on the image, I think the impact was [Type], but I'm not fully confident. Can you confirm?"
+3. User provides clarification
+4. Agent updates the value, then proceeds to file with Computer Use
 
-### With Incomplete Data
-1. Pages 1–5 completed
-2. Page 6 (Review): Agent notices Police Report is blank (optional, OK) but Image Analysis missing (required, NOT OK)
-3. Error message displayed: "Image analysis is incomplete"
-4. Agent goes back to Page 4, reviews what's missing, completes it, retries submit
+### With Incomplete Data (validation recovery during filing)
+1. Computer Use fills Pages 1–5 with the confirmed values
+2. Page 6 (Review): a required field is flagged (e.g., "Image analysis is incomplete")
+3. Computer Use goes back to the failing page, completes the missing field from the task values, and retries submit
 
 ### Database Reset
 1. Log in as admin
@@ -309,7 +306,6 @@ Navigation: Next / Back / Cancel
 - **Phone:** Must contain at least one digit (format flexible)
 - **Email:** Must match basic email regex if provided
 - **Address:** 5–100 characters
-- **License Plate:** 0–10 characters, optional
 - **Witness Name:** 0–50 characters, optional
 - **Assumptions:** 0–500 characters, free text
 
@@ -333,33 +329,33 @@ Navigation: Next / Back / Cancel
 
 ### Scenario 1: Simple Two-Vehicle T-Bone
 - Hand-drawn sketch showing clear 90-degree collision
-- Agent uploads image, extracts: 2 vehicles, T-bone, intersection
+- Agent analyzes the image with Work IQ Copilot up front, extracts: 2 vehicles, T-bone, intersection
 - All confidence high
 - No clarification needed
-- Submit successful
+- Computer Use files the claim; submit successful
 
 ### Scenario 2: Ambiguous Photo + Clarification
 - Real or hand-drawn photo with unclear impact angle
-- Agent recognizes medium confidence on impact type
-- Agent asks: "Was this head-on or T-bone?"
+- Work IQ Copilot analysis returns medium confidence on impact type
+- Agent asks (before filing): "Was this head-on or T-bone?"
 - User responds
-- Agent proceeds with updated data
+- Agent files the claim with the updated data
 
 ### Scenario 3: Complex Multi-Vehicle Pile-Up
 - Three vehicles, chain-reaction rear-end
-- Image analysis extraction more complex
+- Work IQ Copilot extraction is more complex
 - Possible injuries and witness
-- Agent handles without getting confused
+- Agent confirms with the user, then files without getting confused
 - Submit successful
 
 ---
 
 ## 11. Agent Behavior Guidelines (Key Priorities)
 
-1. **Image analysis is the MVP.** Treat it as the core deliverable. Never skip or minimize.
-2. **Confidence gates decisions.** If confidence < High on critical fields, ask user one clarifying question.
+1. **Image analysis is the MVP.** Analyze the image **up front with Work IQ Copilot**, confirm uncertain values with the user, then file. Treat it as the core deliverable — never skip or minimize.
+2. **Confidence gates decisions.** If confidence < High on critical fields, ask the user one clarifying question **before filing**.
 3. **No fabrication.** Don't invent witness names, police report numbers, or injuries.
-4. **Deterministic navigation.** Follow prescribed page order: 1 → 2 → 3 → 4 → 5 → 6 → Submit.
+4. **Gather everything before the Computer Use run.** Computer Use is slow and doesn't report back mid-run, so confirm all required fields first, then file in a single pass (page order 1 → 2 → 3 → 4 → 5 → 6 → Submit).
 5. **Hard-required fields.** Image analysis cannot be partial. All fields must be filled.
 6. **Error recovery.** Read error messages, go back, correct, retry.
 7. **Validation discipline.** Never try to submit with incomplete data.

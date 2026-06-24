@@ -4,6 +4,8 @@
 
 > **Note:** This is a design-first specification. All decisions are locked before implementation begins.
 
+> **How to read this doc:** Sections 1–15 are the **original design** — the locked, pre-implementation specification. The final **Lessons Learned After Testing** section records where the shipped agent diverged once we ran it against a real Windows 365 Cloud PC. Read the design for intent; read the lessons for what actually works.
+
 ---
 
 ## 1. Project Goal
@@ -60,6 +62,8 @@ User attaches image file (PNG, JPG, or hand-drawn sketch).
 
 ### Demo Reset
 After demo ends, claims adjuster logs in, goes to Admin, selects "Reset Database to Defaults" → all claims wiped, app returns to clean state for next demo.
+
+> **As built:** the shipped agent moved image analysis up front (Work IQ Copilot) and runs a single Computer Use pass *after* confirming fields with the user — so step 5's "CUA vision reads the sketch" happens before the form is touched, not during it. See **Lessons Learned After Testing** at the end.
 
 ---
 
@@ -209,7 +213,7 @@ After demo ends, claims adjuster logs in, goes to Admin, selects "Reset Database
    - File chooser (accepts .png, .jpg, .bmp)
    - Show image preview after upload
    - Display filename
-   - Status line: "Image attached" or "No image selected"
+   - Status line: shows "No images uploaded" until at least one image is added
    - Next / Back / Cancel
 
 4. **Image Analysis (REQUIRED)**
@@ -279,6 +283,8 @@ After demo ends, claims adjuster logs in, goes to Admin, selects "Reset Database
 
 ### Agent Role
 **Claims Intake Operator** — autonomous assistant that processes user-provided accident images and populates claim forms in a legacy desktop system.
+
+> **As built:** two models split the work — orchestrator/agent = **Claude Opus 4.7**, Computer Use tool = **Claude Sonnet 4.5** — and web search is disabled. The behaviors below are the original design intent; see **Lessons Learned After Testing** at the end for the shipped flow.
 
 ### Knowledge Base
 - Screen layouts and field descriptions
@@ -412,7 +418,7 @@ auto-claims-fnol-demo/
 │   └── app.config
 │
 ├── dist/                              ← Pre-built exe + database
-│   ├── auto-claims-fnol.exe
+│   ├── AutoClaimsFnolApp.exe
 │   └── claims-fnol.db
 │
 ├── intune/
@@ -519,3 +525,38 @@ The adjuster "queue" is just a local SQLite table viewed in-app.
 ✓ CUA autonomy: Autonomous + one clarification on low confidence  
 
 **Next step:** Draft AGENT-GUIDE.md (complete screen reference) and DEMO-WALKTHROUGH.md (scripted demos).
+
+---
+
+## Lessons Learned After Testing
+
+Everything above is the original, pre-build design. After wiring the agent to a real Windows 365 Cloud PC and running it end-to-end, several things changed. This is the "where we ended up" counterpart to the design above — each lesson is *what we designed → what we learned → what we changed*.
+
+### 1. Image analysis moved up front (Work IQ–first)
+- **Designed:** the CUA would "see" the sketch during Page 4 and populate the analysis fields inline.
+- **Learned:** doing vision *and* form-driving in the same pass made the run slower and harder to verify, and any misread surfaced only after the form was half-filled.
+- **Changed:** the **orchestrator** analyzes the image up front with **Work IQ Copilot** (from a OneDrive/SharePoint link), confirms every field with the user, then hands the confirmed values to a single Computer Use pass. On Page 4 the CUA just transcribes those values; it only re-derives from the on-screen preview if a value is missing.
+
+### 2. Two models, two jobs
+- **Designed:** one model for the whole agent.
+- **Learned:** the up-front image analysis needs strong vision/reasoning, but the form navigation just needs to be fast and reliable.
+- **Changed:** **orchestrator/agent = Claude Opus 4.7** (image analysis); **Computer Use tool = Claude Sonnet 4.5** (form navigation). Web search is disabled — everything needed is in Knowledge + instructions.
+
+### 3. Confirm once, then stop asking
+- **Designed:** "autonomous + one clarification on low confidence."
+- **Learned:** the agent over-asked — it re-explained the process and re-requested details the user had already given, and once flagged a valid incident date as "in the future" (a model-clock artifact). Users had to say "that's all I have" more than once.
+- **Changed:** gather and confirm everything in one pass, then proceed. Don't re-litigate fields that are already provided, and don't second-guess a plausible date.
+
+### 4. MFA must pause, not loop
+- **Learned:** when downloading the image triggered Entra MFA, the CUA repeatedly clicked Cancel and tried other accounts instead of waiting.
+- **Changed:** the CUA now surfaces the verification number and **waits** for the user to approve — never cancels or loops. Pre-authenticating Edge and pre-downloading the image avoids the prompt entirely.
+
+### 5. The #1 blocker was environmental, not the agent
+- **Learned:** the single biggest failure was the app not launching at all — `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe` returned "you don't have permission to open this file" because the interactive user lacked **execute** rights. No instruction tuning can work around this.
+- **Changed:** treat "the exe is runnable by the signed-in user" as a hard prerequisite, fixed at the file/folder ACL (or by deploying to a per-user executable location) before any run.
+
+### 6. Stage the image twice
+- **Learned:** the image is needed in two forms — a OneDrive/SharePoint **link** for Work IQ Copilot to analyze, and a **local file** for the Page 3 upload.
+- **Changed:** stage both up front; pre-downloading the local copy also sidesteps the mid-run MFA prompt.
+
+> **Deliberately unchanged:** the original domain-model fields above (vehicle color, license plate, free-text narrative, Save-as-Draft, the road-condition enum) are kept as the historical design record even though the shipped app and flow don't all exercise them. They document intent, not current behavior.

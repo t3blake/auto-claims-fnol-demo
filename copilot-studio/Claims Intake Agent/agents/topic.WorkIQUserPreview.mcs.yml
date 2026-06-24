@@ -1,0 +1,14 @@
+mcs.metadata:
+  componentName: Work IQ User (Preview)
+kind: TaskDialog
+modelDisplayName: Work IQ User (Preview)
+modelDescription: Look up the signed-in user's Microsoft 365 profile and personal context (such as name, email, and files) via Microsoft Graph.
+action:
+  kind: InvokeExternalAgentTaskAction
+  connectionReference: cre3e_ClaimsIntakeAgent.shared_a365memcp.shared-a365memcp-ff8ed5da-6079-4767-ae23-f49684dec5c7
+  connectionProperties:
+    mode: Invoker
+
+  operationDetails:
+    kind: ModelContextProtocolMetadata
+    operationId: mcp_MeServer

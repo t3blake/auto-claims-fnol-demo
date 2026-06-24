@@ -1,0 +1,7 @@
+﻿connectionReferences:
+  - connectionReferenceLogicalName: cre3e_ClaimsIntakeAgent.action.Computeruse-Computeruse.shared_computeroperator.shared-computeropera-acacc6b6-b62b-43cc-a3eb-903fcf767fac
+    connectorId: /providers/Microsoft.PowerApps/apis/shared_computeroperator
+  - connectionReferenceLogicalName: cre3e_ClaimsIntakeAgent.shared_a365copilotchatmcp.shared-a365copilotch-4ae5087b-ddd4-4418-94d5-e1421deae4e5
+    connectorId: /providers/Microsoft.PowerApps/apis/shared_a365copilotchatmcp
+  - connectionReferenceLogicalName: cre3e_ClaimsIntakeAgent.shared_a365memcp.shared-a365memcp-ff8ed5da-6079-4767-ae23-f49684dec5c7
+    connectorId: /providers/Microsoft.PowerApps/apis/shared_a365memcp

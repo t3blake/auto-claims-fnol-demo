@@ -1,0 +1,26 @@
+displayName: Claims Intake Agent
+schemaName: cre3e_ClaimsIntakeAgent
+accessControlPolicy: GroupMembership
+authenticationMode: Integrated
+authenticationTrigger: Always
+configuration:
+  settings:
+    GenerativeActionsEnabled: true
+
+  isAgentConnectable: true
+  gPTSettings:
+    defaultSchemaName: cre3e_ClaimsIntakeAgent.gpt.default
+
+  aISettings:
+    useModelKnowledge: false
+    isFileAnalysisEnabled: false
+    isSemanticSearchEnabled: false
+    contentModeration: Low
+    optInUseLatestModels: false
+
+  recognizer:
+    kind: GenerativeAIRecognizer
+
+publishedOn: 2026-06-24T00:03:22.0000000Z
+template: default-2.1.0
+language: 1033

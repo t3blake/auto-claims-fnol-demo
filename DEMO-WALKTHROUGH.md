@@ -7,13 +7,14 @@ Three fully scripted demo flows you can run live or use as reference. Each tests
 ## Setup Before Any Demo
 
 1. **Verify app is running** on the Cloud PC
-   - Launch `auto-claims-fnol.exe` from Run dialog: `C:\AutoClaimsFNOL\auto-claims-fnol.exe`
-   - Verify window title: "Auto Claims FNOL — Intake System"
+   - Launch `AutoClaimsFnolApp.exe` from Run dialog: `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe`
+   - Verify window title: "Auto Claims FNOL - Intake System"
+   - **Confirm it opens as the signed-in user the agent controls.** If you see "Windows cannot access… / You don't have permission to open this file," that user lacks execute rights on the exe — fix the file/folder ACL before demoing. No agent instruction can work around this.
 
-2. **Test image files ready**
-   - Prepare simple hand-drawn accident sketch (PNG or JPG)
-   - Prepare photo or second sketch for alternate scenarios
-   - Save to a known location on the Cloud PC (e.g., `C:\Temp\accident-sketch.jpg`)
+2. **Test images staged twice**
+   - Prepare a simple hand-drawn accident sketch (PNG or JPG) and a photo/second sketch for alternate scenarios.
+   - Put each image in **OneDrive/SharePoint** so you have a shareable link — this is what Work IQ Copilot analyzes up front.
+   - Also **pre-download a local copy** to a known path (e.g., `C:\Temp\accident-sketch.jpg`) for the Page 3 upload. Pre-downloading avoids an MFA prompt mid-run.
 
 3. **Database clean**
    - Log in as admin (`admin` / `admin`)
@@ -23,8 +24,10 @@ Three fully scripted demo flows you can run live or use as reference. Each tests
 
 4. **Agent ready**
    - Copilot Studio agent in draft mode (do not publish)
-   - Computer-Use tool enabled and pointed at the Cloud PC
-   - Model set to Claude Sonnet 4.5 or newer
+   - Computer Use tool enabled and pointed at the Cloud PC
+   - Work IQ Copilot (Preview) tool enabled (analyzes the image up front)
+   - **Two models set:** orchestrator/agent → Claude Opus 4.7; Computer Use tool → Claude Sonnet 4.5
+   - Web search disabled
    - Knowledge source uploaded
    - Agent Instructions configured
    - CUA Tool Instructions configured
@@ -35,9 +38,9 @@ Three fully scripted demo flows you can run live or use as reference. Each tests
 
 **Talking Points:**
 - "We have an accident sketch showing two vehicles in a T-bone collision."
-- "The agent will upload the image, read it, extract key facts, and fill the insurance form without any help from me."
-- "Note how the agent correctly identifies the impact type and vehicle positions just from looking at the sketch."
-- "The image analysis details are hard-required — the agent can't submit without them — that's how you know it did the work."
+- "The agent analyzes the image up front with Work IQ Copilot, confirms the key facts with me, then fills the whole insurance form in one clean pass."
+- "Note how it identifies the impact type and vehicle positions from the sketch before it ever touches the app."
+- "The image analysis details are hard-required — the app won't submit without them — so the Page 4 section is where that up-front analysis pays off."
 
 **Demo Image:**
 Create a simple hand-drawn sketch or provide this ASCII representation (or use a real hand-drawn one):
@@ -56,7 +59,7 @@ Create a simple hand-drawn sketch or provide this ASCII representation (or use a
 **Agent Prompt:**
 ```
 I have an accident sketch showing two vehicles colliding at an intersection. 
-The sketch is at C:\Temp\accident-sketch.jpg.
+Here's the image: <paste OneDrive/SharePoint link>. (A local copy is staged at C:\Temp\accident-sketch.jpg for the upload.)
 Can you file a claim for this accident? 
 Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
 ```
@@ -65,7 +68,7 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
 
 1. **Launch app**
    - Press Win+R
-   - Type `C:\AutoClaimsFNOL\auto-claims-fnol.exe`
+   - Type `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe`
    - Press Enter
    - Screenshot → Verify login screen
 
@@ -76,8 +79,7 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
    - Screenshot → Verify Main Menu
 
 3. **Navigate to New Claim**
-   - Select "New Claim" radio button
-   - Click Select
+   - Click the "New Claim" button
    - Screenshot → Verify Page 1
 
 4. **Page 1: Claimant Info**
@@ -97,7 +99,7 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
    - Screenshot → Verify Page 3
 
 6. **Page 3: Image Upload**
-   - Click Browse button
+   - Click the **[Add Image...]** button
    - Navigate to `C:\Temp\accident-sketch.jpg`
    - Select file, confirm upload
    - Screenshot → Verify image preview
@@ -105,8 +107,7 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
    - Screenshot → Verify Page 4
 
 7. **Page 4: Image Analysis** ← **Core demo moment**
-   - Agent vision processes image
-   - Auto-populate fields:
+   - The orchestrator already analyzed the image with Work IQ Copilot up front; here the Computer Use tool simply enters the confirmed values:
      - Incident Type: `Multi-Vehicle`
      - Number of Vehicles: `2`
      - Impact Type: `T-Bone`
@@ -119,7 +120,7 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
    - Confidence: `High`
    - Assumptions: `"Clear T-bone collision at 90-degree angle. Vehicles at right angles."`
    - Click Next
-   - **[Narrator: "Notice the agent extracted all this detail from the sketch without asking me anything."]**
+   - **[Narrator: "All this detail came from the up-front Work IQ analysis we confirmed earlier — the agent is just transcribing it into the form now."]**
 
 8. **Page 5: Vehicle & Injury Info**
    - Enter Vehicle 1: Make = `Toyota`, Model = `Camry`, Year = `2022`, Damage = `Moderate`
@@ -138,12 +139,12 @@ Use these claimant details: Name: Alex Johnson, Phone: 555-0101.
 10. **Confirmation**
     - Show claim number (e.g., CLM-2026-001234)
     - Message: "Claim submitted successfully"
-    - **[Narrator: "And that's it. Claim filed. The agent read the sketch, understood the accident, filled the form, and submitted it. All in seconds."]**
+    - **[Narrator: "And that's it. Claim filed. The agent analyzed the sketch, confirmed the details with me, filled all six pages in one pass, and submitted it."]**
 
 **Audience Talking Points:**
-- "The agent treated the image analysis as the core deliverable."
-- "Notice the form wouldn't submit without a complete image analysis section — that enforces the agent actually did the work."
-- "If I had attached a blurry or ambiguous image, the agent would have asked me one clarifying question. But this sketch was clear, so it proceeded autonomously."
+- "The image analysis is the core deliverable — and it happens up front, before the app is ever touched."
+- "Notice the form wouldn't submit without a complete image analysis section — that's the app enforcing that the work was done."
+- "If I'd given a blurry or ambiguous image, the agent would have asked me one clarifying question before running. This sketch was clear, so we confirmed and proceeded."
 - "In real insurance, this would cut claim processing time from hours (manual data entry) to minutes."
 
 ---
@@ -161,7 +162,7 @@ Provide a real photo of an accident scene or a moderately ambiguous hand-drawn s
 **Agent Prompt:**
 ```
 I have a photo from a car accident. It's a bit unclear from the angle, but it looks like there could have been two cars involved.
-The photo is at C:\Temp\accident-photo.jpg.
+Here's the photo: <paste OneDrive/SharePoint link>. (A local copy is staged at C:\Temp\accident-photo.jpg for the upload.)
 Can you file a claim? Use claimant: Name: Sarah Davis, Phone: 555-0102.
 ```
 
@@ -170,10 +171,9 @@ Can you file a claim? Use claimant: Name: Sarah Davis, Phone: 555-0102.
 1-6. **Same as Scenario 1 (Login through Image Upload)**
 
 7. **Page 4: Image Analysis** ← **Confidence check moment**
-   - Agent processes image
-   - Recognizes ambiguity on impact type
-   - Auto-populate most fields, but impact type has medium confidence
-   - Agent **pauses and asks you:** "I analyzed this as a possible T-Bone collision, but the angle is a bit unclear. Was this a head-on impact, a T-bone, or something else?"
+   - During the up-front Work IQ analysis, the agent recognizes ambiguity on impact type
+   - It has most fields confidently, but impact type is only medium confidence
+   - Agent **pauses and asks you (before running the form):** "I analyzed this as a possible T-Bone collision, but the angle is a bit unclear. Was this a head-on impact, a T-bone, or something else?"
    - **[You respond: "It was T-bone."]**
    - Agent updates Impact Type to `T-Bone` and continues
    - Fill remaining fields
@@ -214,7 +214,7 @@ The image shows three cars involved. There's a witness on scene.
 The claimant's vehicle (the middle one) hit the car in front.
 Use these details: Claimant Name: John Martinez, Phone: 555-0103.
 Can you file a claim?
-Image is at C:\Temp\pileup-sketch.jpg.
+Here's the image: <paste OneDrive/SharePoint link>. (A local copy is staged at C:\Temp\pileup-sketch.jpg for the upload.)
 ```
 
 **Expected Agent Flow:**
@@ -259,9 +259,9 @@ Image is at C:\Temp\pileup-sketch.jpg.
    - Click Next
 
 8. **Page 5: Vehicle & Injury Info** ← **Multi-vehicle data entry**
-   - Enter Vehicle 1 (your vehicle): Toyota RAV4, 2021, Silver, Damage = Severe
+   - Enter Vehicle 1 (your vehicle): Toyota RAV4, 2021, Damage = Severe
    - Check "Multi-vehicle"
-   - Enter Vehicle 2 (hit from behind): Honda Accord, 2019, Blue, Damage = Moderate
+   - Enter Vehicle 2 (hit from behind): Honda Accord, 2019, Damage = Moderate
    - (Note: Vehicle 3 not required in this form, agent documents in narrative if needed)
    - Injuries: `Yes` (agent asks for details or leaves as "Reported" without specifics)
    - Witness: `Yes`
@@ -300,6 +300,14 @@ After Scenario 1, 2, or 3 completes:
 ---
 
 ## Troubleshooting During Live Demo
+
+### App Won't Launch ("You don't have permission to open this file")
+- **Cause:** the signed-in user the agent controls lacks execute rights on `AutoClaimsFnolApp.exe`. This is the #1 blocker and is environmental — no instruction change fixes it.
+- **Fix:** correct the file/folder ACL (or deploy the exe to a per-user, executable location) before the demo. Verify by double-clicking it yourself as that user.
+
+### Stuck on a Sign-In / MFA Prompt
+- **Cause:** downloading the image or opening a OneDrive/SharePoint link triggers Entra MFA mid-run.
+- **Fix:** the CUA should surface the verification number and wait — don't let it cancel/loop. Best avoided by pre-authenticating Edge on the Cloud PC and pre-downloading the local image copy before the run.
 
 ### Agent Stuck on Page 4 (Image Analysis)
 - **Cause:** One field not populated or checkbox not checked

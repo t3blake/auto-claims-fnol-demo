@@ -8,14 +8,16 @@
 
 The app does **not** launch automatically. The agent must open it.
 
+> **Prerequisite — the exe must be executable by the signed-in user.** If launching returns *"Windows cannot access the specified device, path, or file"* or *"You don't have permission to open this file,"* the interactive user lacks execute rights on `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe`. Fix the file/folder ACL (or deploy it to a per-user, executable location) before running the agent — no instruction tuning can work around a permission block.
+
 ### Recommended: Windows Run Dialog
 
 | Step | Agent Action |
 |------|-------------|
 | 1 | Press **Win+R** to open the Run dialog |
-| 2 | Type: `C:\AutoClaimsFNOL\auto-claims-fnol.exe` |
+| 2 | Type: `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe` |
 | 3 | Press **Enter** |
-| 4 | Wait for window titled **"Auto Claims FNOL — Intake System"** to appear |
+| 4 | Wait for window titled **"Auto Claims FNOL - Intake System"** to appear |
 | 5 | Click the window to ensure focus |
 
 ### Alternative: Desktop Shortcut
@@ -25,12 +27,12 @@ The app does **not** launch automatically. The agent must open it.
 | 1 | Minimize all windows (press **Win+D**) to expose desktop |
 | 2 | Locate shortcut labeled **"Auto Claims FNOL"** |
 | 3 | **Double-click** the shortcut |
-| 4 | Wait for window titled **"Auto Claims FNOL — Intake System"** to appear |
+| 4 | Wait for window titled **"Auto Claims FNOL - Intake System"** to appear |
 
 ### Verifying the App Is Running
 
-- **Window title:** `Auto Claims FNOL — Intake System`
-- **Process name:** `auto-claims-fnol`
+- **Window title:** `Auto Claims FNOL - Intake System`
+- **Process name:** `AutoClaimsFnolApp`
 - **Visual confirmation:** Gray WPF form with input fields, buttons, dropdown lists
 
 Once window is open and focused, proceed to Section 1 (Login Screen).
@@ -41,9 +43,9 @@ Once window is open and focused, proceed to Section 1 (Login Screen).
 
 **Auto Claims FNOL** is a WPF desktop application that simulates a legacy auto insurance claims intake system. It is installed locally on Windows and launched via Run dialog, desktop shortcut, or exe. The app is a single-window desktop form styled to look unmistakably pre-modern (2000–2005 era).
 
-- **Exe name:** `auto-claims-fnol.exe`
-- **Window title:** `Auto Claims FNOL — Intake System`
-- **Install path (Intune):** `C:\AutoClaimsFNOL\auto-claims-fnol.exe`
+- **Exe name:** `AutoClaimsFnolApp.exe`
+- **Window title:** `Auto Claims FNOL - Intake System`
+- **Install path (Intune):** `C:\AutoClaimsFNOL\AutoClaimsFnolApp.exe`
 - **Database:** `claims-fnol.db` (SQLite, auto-created next to exe on first run)
 - **Desktop shortcut:** `C:\Users\Public\Desktop\Auto Claims FNOL.lnk` (label: **"Auto Claims FNOL"**)
 
@@ -156,20 +158,17 @@ The agent must distinguish between screen states:
 │  MAIN MENU                                              │
 │  Logged in as: Sarah Chen, Downtown Branch              │
 │                                                        │
-│  [ ] New Claim                                          │
-│  [ ] Search Existing Claim                              │
-│  [ ] System Administration (Admin only)                 │
-│  [ ] Log Off                                            │
+│  [ New Claim ]                                          │
+│  [ Search Existing Claim ]                              │
+│  [ System Administration ]  (Admin only)                │
+│  [ Log Off ]                                            │
 │                                                        │
-│                              [Select]                  │
 │                                                        │
 └────────────────────────────────────────────────────────┘
 ```
 
 **Interaction:**
-- Click one of the four options (mutually exclusive radio buttons)
-- Click **Select** button to navigate
-- Or double-click an option to go directly
+- Click one of the four menu buttons to navigate directly (each option is its own button — there is no separate Select step)
 
 **Workflows:**
 | Option | Destination | Requires |
@@ -187,7 +186,7 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 
 ### 5.1 Page 1: Claimant Information
 
-**Screen title:** `NEW CLAIM — Page 1 of 6: Claimant Information`
+**Screen title:** `NEW CLAIM - Page 1 of 6: Claimant Information`
 
 **Fields:**
 
@@ -217,7 +216,7 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 
 ### 5.2 Page 2: Incident Details
 
-**Screen title:** `NEW CLAIM — Page 2 of 6: Incident Details`
+**Screen title:** `NEW CLAIM - Page 2 of 6: Incident Details`
 
 **Fields:**
 
@@ -274,7 +273,7 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 
 ### 5.3 Page 3: Image Upload & Preview
 
-**Screen title:** `NEW CLAIM — Page 3 of 6: Upload Accident Image`
+**Screen title:** `NEW CLAIM - Page 3 of 6: Upload Accident Image`
 
 **Layout:**
 ```
@@ -285,17 +284,18 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 │  UPLOAD ACCIDENT IMAGE                                  │
 │  (Hand-drawn sketch or photograph)                      │
 │                                                        │
-│  [Browse...]  [Clear Image]                             │
-│  Status: No image selected                              │
+│  Image Description: [_______________________]          │
+│  [Add Image...]  [Remove Selected]                      │
+│  Status: No images uploaded                             │
 │                                                        │
-│  ┌──────────────────────────────────┐                  │
-│  │                                  │                  │
-│  │        [Image Preview Area]       │  ← 400x300 px   │
-│  │        (Empty or shows image)     │                  │
-│  │                                  │                  │
-│  └──────────────────────────────────┘                  │
+│  Uploaded Images:                                       │
+│  ┌───────────────────────────────────┐                  │
+│  │ (list of added image files)       │                  │
+│  └───────────────────────────────────┘                  │
 │                                                        │
-│  Filename: (none) or "accident-sketch.jpg"              │
+│  ┌───────────────────────────────────┐                  │
+│  │        [Image Preview Area]       │                  │
+│  └───────────────────────────────────┘                  │
 │                                                        │
 │                    < Back   [Next >]                    │
 │                                                        │
@@ -303,33 +303,31 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 ```
 
 **Interaction:**
-1. Click **[Browse...]** button
-2. System opens file chooser (Windows dialog)
-3. Navigate to and select image file (.jpg, .png, .bmp)
-4. File chooser closes
-5. Image preview displays in the preview area
-6. Filename appears below preview
-7. Status changes to "Image attached"
+1. Click into the **Image Description** field and type a short description (e.g., "Front-end collision damage")
+2. Click **[Add Image...]** button
+3. System opens file chooser (Windows dialog)
+4. Navigate to and select image file (.jpg, .png, .bmp)
+5. File chooser closes
+6. Image appears in the **Uploaded Images** list and the preview displays it
+7. Status changes from "No images uploaded"
 8. Click **[Next >]** to proceed to Page 4
 
 **Accepted Formats:** `.jpg`, `.png`, `.bmp`  
 **Max file size:** 10 MB (enforced by file chooser filter)
 
 **Validation:**
-- Image upload is **optional** at this stage
-- But if no image is uploaded, Page 4 (Image Analysis) will be prefilled with "No image provided" and agent will not be able to proceed unless image is re-uploaded
+- At least one image is **required** to proceed past Page 3 (hard block)
+- The [Next >] button will not advance until the Uploaded Images list contains at least one image
 
-**If user clicks [Clear Image]:**
-- Image preview cleared
-- Status changes back to "No image selected"
-- Filename field shows "(none)"
-- Agent can go back and re-upload or proceed without image (not recommended)
+**If user clicks [Remove Selected]:**
+- The selected image is removed from the Uploaded Images list
+- If no images remain, Status returns to "No images uploaded" and the page blocks until an image is added again
 
 ---
 
 ### 5.4 Page 4: Image Analysis (REQUIRED — Hard Block)
 
-**Screen title:** `NEW CLAIM — Page 4 of 6: Image Analysis & Interpretation`
+**Screen title:** `NEW CLAIM - Page 4 of 6: Image Analysis & Interpretation`
 
 **CRITICAL:** This section is **hard-required**. Form CANNOT submit without all fields complete.
 
@@ -429,16 +427,17 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 - Agent must correct and retry before proceeding
 
 **Agent Behavior — Key Points:**
-- **Always prefill all fields** (via external image analysis before agent navigates to this page)
+- **Values come from the up-front Work IQ Copilot analysis** — the orchestrator analyzes the accident image (from its OneDrive/SharePoint link) and confirms the values with the user *before* Computer Use launches. On this page the Computer Use tool simply enters those confirmed values; it only re-derives a value from the on-screen image preview if one is missing.
+- **Always fill every required field** — the page hard-blocks Next until complete.
 - **Never submit with incomplete image analysis**
-- If confidence is **Low** and agent must proceed, agent should ask user one clarifying question (e.g., "Was the impact head-on or T-bone?") and update the field before clicking Next
-- If image could not be processed, display "No image provided" and block next unless image re-uploaded
+- If confidence is **Low** and the agent must proceed, it should ask the user one clarifying question (e.g., "Was the impact head-on or T-bone?") and update the field before clicking Next
+- If the image could not be processed, display "No image provided" and block next unless image re-uploaded
 
 ---
 
 ### 5.5 Page 5: Vehicle & Injury Details
 
-**Screen title:** `NEW CLAIM — Page 5 of 6: Vehicle & Injury Information`
+**Screen title:** `NEW CLAIM - Page 5 of 6: Vehicle & Injury Information`
 
 **Layout:**
 ```
@@ -453,8 +452,6 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 │  Make:          [____________________]  (e.g., Toyota)  │
 │  Model:         [____________________]  (e.g., Camry)   │
 │  Year:          [____________________]  (e.g., 2022)    │
-│  Color:         [____________________]  (e.g., Blue)    │
-│  License Plate: [____________________]  (optional)      │
 │  Damage Level:  [Moderate ▼]                            │
 │                                                        │
 │  OTHER VEHICLE (if applicable)                          │
@@ -463,9 +460,6 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 │                                                        │
 │  Make:          [____________________]  (grayed if no)  │
 │  Model:         [____________________]                  │
-│  Year:          [____________________]                  │
-│  Color:         [____________________]                  │
-│  License Plate: [____________________]                  │
 │  Damage Level:  [Moderate ▼]                            │
 │                                                        │
 │  INJURY & WITNESS INFO                                  │
@@ -486,15 +480,10 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 | Primary Vehicle Make | Text | No | e.g., Toyota, Ford |
 | Primary Vehicle Model | Text | No | e.g., Camry, Mustang |
 | Primary Vehicle Year | Text (int) | No | 4-digit year, e.g., 2022 |
-| Primary Vehicle Color | Text | No | e.g., Blue, Silver |
-| Primary Vehicle License Plate | Text | No | e.g., ABC-1234 |
 | Primary Vehicle Damage Level | Dropdown | No | None, Minor, Moderate, Severe, Total Loss |
 | Multi-vehicle Incident | Checkbox | No | If checked, enables other vehicle fields |
 | Other Vehicle Make | Text | Conditional | Enabled if multi-vehicle |
 | Other Vehicle Model | Text | Conditional | Enabled if multi-vehicle |
-| Other Vehicle Year | Text | Conditional | Enabled if multi-vehicle |
-| Other Vehicle Color | Text | Conditional | Enabled if multi-vehicle |
-| Other Vehicle License Plate | Text | Conditional | Enabled if multi-vehicle |
 | Other Vehicle Damage Level | Dropdown | Conditional | Enabled if multi-vehicle |
 | Injuries Reported | Radio (Yes/No) | Yes | |
 | Witness Present | Radio (Yes/No) | Yes | |
@@ -522,7 +511,7 @@ The claim intake is a **6-page wizard**. Navigation: Next / Back / Cancel on eac
 
 ### 5.6 Page 6: Review & Submit
 
-**Screen title:** `NEW CLAIM — Page 6 of 6: Review & Submit`
+**Screen title:** `NEW CLAIM - Page 6 of 6: Review & Submit`
 
 **Layout:**
 ```
@@ -670,12 +659,14 @@ If validation fails, error message displayed in red at top, form does not close.
 │  SYSTEM ADMINISTRATION                                  │
 │  (Admin access only)                                    │
 │                                                        │
-│  [ ] Reset Database to Defaults                         │
-│  [ ] View Application Version & Build Info              │
-│  [ ] View Database Statistics                           │
-│  [ ] Return to Main Menu                                │
+│  [ Reset Database to Defaults ] [ Refresh Stats ]       │
+│  [ View Logs ]                                          │
 │                                                        │
-│                              [Select]                  │
+│  ┌───────────────────────────────────┐                  │
+│  │  (Database statistics display)    │                  │
+│  └───────────────────────────────────┘                  │
+│                                                        │
+│                          [ Back to Main Menu ]          │
 │                                                        │
 └────────────────────────────────────────────────────────┘
 ```
@@ -688,23 +679,19 @@ If validation fails, error message displayed in red at top, form does not close.
   - All claims deleted
   - Database re-seeded with reference data
   - Message: "Database reset successfully. System ready for demo."
-  - Return to Main Menu
 
-### View Application Version & Build Info
-- Shows:
-  - Application: Auto Claims FNOL
-  - Version: 1.0.0
-  - Build Date: [date]
-  - Database Schema Version: 1.0
-  - SQLite Version: [version]
-  - OK button to return
-
-### View Database Statistics
-- Shows:
+### Refresh Stats
+- Populates the statistics display with current database counts, such as:
   - Total Claims: [count]
   - Claims Submitted: [count]
   - Claims Draft: [count]
   - Last Claim Created: [timestamp]
+
+### View Logs
+- Shows recent application log output in the statistics display for troubleshooting
+
+### Back to Main Menu
+- Returns to the Main Menu
 
 ---
 
@@ -715,7 +702,6 @@ If validation fails, error message displayed in red at top, form does not close.
 - Phone: Must contain digits (format flexible: 555-0101, 5550101, etc.)
 - Email: Optional, must match basic regex if provided
 - Address: 5–100 characters
-- License Plate: Optional, 0–10 characters
 
 ### Numeric Fields
 - Year: 4 digits (1900–2099)
@@ -793,7 +779,7 @@ Before any action, take a screenshot to confirm current screen state.
 3. Tab to Password, type `pass123`
 4. Click Login button
 5. Screenshot → Verify Main Menu
-6. Select "New Claim", click Select
+6. Click the "New Claim" button
 7. Screenshot → Verify Page 1 (Claimant)
 8. Enter: Name = "Alex Johnson", Phone = "555-0101"
 9. Click Next
@@ -803,8 +789,8 @@ Before any action, take a screenshot to confirm current screen state.
 13. Set Police Report = No
 14. Click Next
 15. Screenshot → Verify Page 3 (Image Upload)
-16. Click Browse, select hand-drawn sketch file
-17. Screenshot → Verify preview shows image
+16. Type an image description, click Add Image..., select the sketch file from Downloads
+17. Screenshot → Verify the image appears in the Uploaded Images list and preview
 18. Click Next
 19. Screenshot → Verify Page 4 (Image Analysis) — all fields prefilled
 20. Confirm: Incident Type = Multi-Vehicle, Impact = T-Bone, Vehicles = 2

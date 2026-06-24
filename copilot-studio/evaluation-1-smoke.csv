@@ -1,6 +1,6 @@
 Prompt,Expected Output Grader Type,Expected Output
-"Launch the Auto Claims FNOL app on the Cloud PC using the Run dialog or desktop shortcut.","General quality","Window titled 'Auto Claims FNOL — Intake System' appears successfully."
+"Launch the Auto Claims FNOL app on the Cloud PC using the Run dialog or desktop shortcut.","General quality","Window titled 'Auto Claims FNOL - Intake System' appears successfully."
 "Log in with credentials: Username = adjuster1, Password = pass123.","General quality","Login succeeds; Main Menu displayed showing 'MAIN MENU' title and four options (New Claim, Search, Admin, Log Off)."
 "Attempt to log in with incorrect password (e.g., 'wrongpassword'). Then log in with correct credentials adjuster1/pass123.","General quality","First login fails with error message 'Invalid username or password. Attempt 1 of 3'; second login with correct credentials succeeds."
-"From Main Menu, select 'New Claim' and click Select.","General quality","New Claim form opens to Page 1; screen title displays 'NEW CLAIM — Page 1 of 6: Claimant Information'."
+"From Main Menu, click the 'New Claim' button.","General quality","New Claim form opens to Page 1; screen title displays 'NEW CLAIM - Page 1 of 6: Claimant Information'."
 "Log off from Main Menu. Close the app. Relaunch it using Run dialog or shortcut. Verify login screen appears.","General quality","App relaunches successfully; login screen appears with Username and Password fields; login functionality works.">
