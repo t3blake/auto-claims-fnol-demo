@@ -1,4 +1,4 @@
-# Auto Claims FNOL — Intune Packaging Build Script
+# Auto Claims FNOL - Intune Packaging Build Script
 # Automates the process of building the .intunewin package
 
 param(
@@ -11,7 +11,7 @@ $SourceDir = ".\source"
 $OutputDir = ".\output"
 $IntuneWinUtil = ".\IntuneWinAppUtil.exe"
 
-Write-Host "Auto Claims FNOL — Intune Package Builder" -ForegroundColor Cyan
+Write-Host "Auto Claims FNOL - Intune Package Builder" -ForegroundColor Cyan
 
 # Publish a SELF-CONTAINED win-x64 build so the target machine needs NO .NET runtime installed.
 # A framework-dependent build would require the .NET 8 Desktop Runtime as a separate prerequisite;
@@ -72,7 +72,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Output: $($PackageFile.FullName)" -ForegroundColor Green
     Write-Host "`nNext steps:" -ForegroundColor Cyan
     Write-Host "1. Open Microsoft Intune admin center"
-    Write-Host "2. Go to Apps → Windows → Add → Windows app (Win32)"
+    Write-Host "2. Go to Apps > Windows > Add > Windows app (Win32)"
     Write-Host "3. Upload: $($PackageFile.FullName)"
     Write-Host "4. Set Install command: powershell.exe -ExecutionPolicy Bypass -File Install.ps1"
     Write-Host "5. Set Uninstall command: powershell.exe -ExecutionPolicy Bypass -File Uninstall.ps1"
