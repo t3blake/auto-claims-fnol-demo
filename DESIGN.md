@@ -398,6 +398,7 @@ auto-claims-fnol-demo/
 ├── LICENSE
 │
 ├── copilot-studio/
+│   ├── SETUP-GUIDE.md                 ← Step-by-step agent setup
 │   ├── KNOWLEDGE.md                   ← Upload as knowledge source
 │   ├── AGENT-INSTRUCTIONS.md          ← Paste into agent instructions
 │   ├── CUA-TOOL-INSTRUCTIONS.md       ← Paste into CUA tool instructions
@@ -405,32 +406,36 @@ auto-claims-fnol-demo/
 │   ├── evaluation-1-smoke.csv
 │   ├── evaluation-2-images.csv
 │   ├── evaluation-3-claims.csv
-│   └── evaluation-4-compound.csv
+│   ├── evaluation-4-compound.csv
+│   └── Claims Intake Agent/           ← Generated agent export (Copilot Studio extension)
 │
 ├── src/                               ← C# / .NET 8 WPF source
-│   ├── Program.cs
-│   ├── MainWindow.xaml / MainWindow.xaml.cs
-│   ├── Screens/ (each screen as separate .xaml + .cs)
-│   ├── Business/ (ClaimService, ImageAnalysisService)
-│   ├── Data/ (ClaimsDbContext, migrations)
-│   ├── Models/ (Claim, Claimant, Incident, ImageAnalysis)
-│   ├── auto-claims-fnol.csproj
-│   └── app.config
+│   └── AutoClaimsFnolApp/
+│       ├── App.xaml / App.xaml.cs
+│       ├── MainWindow.xaml / MainWindow.xaml.cs
+│       ├── AssemblyInfo.cs
+│       └── AutoClaimsFnolApp.csproj
 │
-├── dist/                              ← Pre-built exe + database
-│   ├── AutoClaimsFnolApp.exe
-│   └── claims-fnol.db
-│
-├── intune/
+├── intune/                            ← Intune packaging (self-contained build)
+│   ├── Build.ps1                      ← Publishes the app + builds the .intunewin
+│   ├── Build-IntuneWin.ps1
 │   ├── Install.ps1
 │   ├── Uninstall.ps1
 │   ├── Detect.ps1
-│   ├── IntuneWinAppUtil.exe
-│   ├── source/ (staging)
-│   └── output/ (built .intunewin)
+│   ├── source/ (staging — gitignored)
+│   └── output/ (built .intunewin — gitignored)
+│
+├── docs/images/                       ← Screenshots used in the docs
+│
+├── .github/workflows/                 ← CI: builds & attaches release assets
 │
 └── .gitignore
 ```
+
+> **Deviation from the original design (kept for honesty):**
+> - **App layout** — Originally planned as a multi-project layout (`Program.cs`, `Screens/`, `Business/`, `Data/`, `Models/`, EF Core `ClaimsDbContext`). It shipped as a single WPF project, `src/AutoClaimsFnolApp/`, with one `MainWindow` hosting all six pages — the demo only needed a linear wizard, so the extra service/data layering added complexity without value. The SQLite `claims-fnol.db` is auto-created next to the exe on first run rather than via EF migrations.
+> - **No `dist/` folder** — Originally the repo was going to carry a pre-built `AutoClaimsFnolApp.exe` + seeded `claims-fnol.db`. Binaries were removed from the repo; the prebuilt app now ships only as **release assets** (`AutoClaimsFNOL.intunewin`, `ManualInstall.zip`) so the tree stays clean and history small.
+> - **`IntuneWinAppUtil.exe` not committed** — Originally listed in `intune/`. It's the Microsoft Win32 Content Prep Tool; `Build.ps1`/CI fetch it on demand instead of vendoring the binary.
 
 ---
 
