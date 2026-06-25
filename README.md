@@ -164,6 +164,7 @@ auto-claims-fnol-demo/
 ├── LICENSE
 │
 ├── copilot-studio/                    ← Ready-to-paste agent content
+│   ├── SETUP-GUIDE.md                 ← Step-by-step agent setup
 │   ├── KNOWLEDGE.md
 │   ├── AGENT-INSTRUCTIONS.md
 │   ├── CUA-TOOL-INSTRUCTIONS.md
@@ -171,23 +172,26 @@ auto-claims-fnol-demo/
 │   ├── evaluation-1-smoke.csv
 │   ├── evaluation-2-images.csv
 │   ├── evaluation-3-claims.csv
-│   └── evaluation-4-compound.csv
+│   ├── evaluation-4-compound.csv
+│   └── Claims Intake Agent/           ← Generated agent export (VS Code Copilot Studio extension)
 │
 ├── src/                               ← C# / .NET 8 WPF source
-│   └── [project files]
+│   └── AutoClaimsFnolApp/
 │
-├── dist/                              ← Pre-built exe + database
-│   ├── AutoClaimsFnolApp.exe
-│   └── claims-fnol.db
-│
-├── intune/                            ← Intune deployment packaging
+├── intune/                            ← Intune deployment packaging (self-contained build)
+│   ├── Build.ps1                      ← Publishes the app + produces AutoClaimsFNOL.intunewin
 │   ├── Install.ps1
 │   ├── Uninstall.ps1
-│   ├── Detect.ps1
-│   └── [packaging files]
+│   └── Detect.ps1
+│
+├── docs/images/                       ← Screenshots used in the docs
+│
+├── .github/workflows/                 ← CI: builds & attaches release assets
 │
 └── .gitignore
 ```
+
+> The prebuilt app isn't committed to the repo — download it from the [latest release](https://github.com/t3blake/auto-claims-fnol-demo/releases/latest) (`AutoClaimsFNOL.intunewin` or `ManualInstall.zip`), or build it from source (see below).
 
 ---
 

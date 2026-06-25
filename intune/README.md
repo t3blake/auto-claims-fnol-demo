@@ -15,7 +15,7 @@ This folder contains the scripts and configuration needed to package Auto Claims
 ### Prerequisites
 - Windows machine with PowerShell 5.1+
 - **.NET 8 SDK** (the build publishes the app from source) — https://dotnet.microsoft.com/download/dotnet/8.0
-- `IntuneWinAppUtil.exe` (included in this folder, or download from [Microsoft](https://github.com/microsoft/microsoft-intune-app-sdk-dotnet/releases))
+- `IntuneWinAppUtil.exe` (the **Microsoft Win32 Content Prep Tool** — not committed here; download the latest from [microsoft/Microsoft-Win32-Content-Prep-Tool](https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool) and place it in this folder. `Build.ps1` / CI fetch it automatically.)
 
 > The package is published **self-contained** (`--self-contained true`), so the .NET 8 runtime is bundled inside the app folder. Target machines (including the W365 Cloud PC) need **no .NET runtime installed** — that's only a build-time requirement here.
 
