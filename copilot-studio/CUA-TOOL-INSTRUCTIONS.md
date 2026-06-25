@@ -57,6 +57,7 @@ Page 3 uploads local files, so every accident image must exist on the PC before 
 4. Download per the task's selection:
    - **All files in the folder:** use the folder's Select all → Download (or download each file in turn).
    - **Specific files:** download only the named file(s) — do not browse or pick others.
+   - **Select without opening previews:** hover a file row and click the round selection circle on the left — clicking the filename opens a preview instead and slows you down. With the file(s) checked, use the **Download** button on the top command bar. For several files, check each circle (or use Select all), then Download once.
 5. Default save location: C:\Users\<username>\Downloads\
 6. Note the exact filename(s) (e.g., accident.jpg)
 7. Close or minimize Edge
@@ -103,7 +104,7 @@ For each file you staged in Step 0, add it (the app supports multiple images):
 1. Click into the "Image Description" field and type a short description (e.g., "Front-end collision damage")
 2. Click the [Add Image...] button
 3. In the Windows file dialog, navigate to C:\Users\<username>\Downloads\
-4. Select the staged file, click [Open]
+4. Select a **single** staged file, click [Open]. The dialog takes one file per Add Image — do **not** use Ctrl+A or Ctrl+click to multi-select here; add more images by repeating Add Image.
 5. Verify it appears in the "Uploaded Images" list and the preview shows it. Repeat steps 1-4 for any remaining staged files.
 6. When all staged files are added (at least one is required), the status no longer reads "No images uploaded". Click [Next >]
 
@@ -168,9 +169,9 @@ If a value wasn't provided, derive it from the on-screen image preview. If Next 
 The submitted claim records the image *filename and description*, not the image bytes, so the local copy in Downloads is no longer needed once the claim is submitted. Delete it so downloaded images don't pile up on the W365 PC.
 
 1. Do this only after the Confirmation page showed "CLAIM SUBMITTED SUCCESSFULLY" and you captured the Claim Number.
-2. Press Win+R.
+2. Press Win+R. The Run box may still show the previous command (the app's exe path) — clear it completely (Ctrl+A, then Delete) before typing.
 3. For each file you staged in Step 0, type a delete command for its exact path and press Enter:
    `cmd /c del /f /q "C:\Users\<username>\Downloads\<filename>"`
-   Use the exact filename(s) you noted in Step 0. (`del` removes the file immediately — it does not go to the Recycle Bin, so it actually frees the space.)
+   Use the exact filename(s) you noted in Step 0. (`del` removes the file immediately — it does not go to the Recycle Bin, so it actually frees the space.) Delete via this command only — do **not** open File Explorer to find and delete the files, and do **not** relaunch the app.
 4. Delete only the specific file(s) you staged for this claim. Never clear the whole Downloads folder — it may contain unrelated user files.
 5. Screenshot to confirm the file is gone, then you're done.
